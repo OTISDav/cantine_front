@@ -1,11 +1,3 @@
-@* connexion avec admin *@
-
-@* Email : ctbfadmin@g6.com
-
-Mot de passe : Admin2003 *@
-
-
-
 @page "/login"
 @using FrontendApp.Services
 @using FrontendApp.Models
@@ -40,50 +32,39 @@ Mot de passe : Admin2003 *@
     private bool IsAdmin = false;
     private string Message = "";
 
-private async Task LoginUser()
-{
-    var user = new UserLoginDto
+    private async Task LoginUser()
     {
-        Email = Email,
-        Password = Password
-    };
-
-    var result = await ApiService.LoginAsync(user);
-    if (result != null && !string.IsNullOrEmpty(result.Token))
-    {
-        // ✅ Vérification stricte pour admin
-        if (IsAdmin)
+        var user = new UserLoginDto
         {
-            if (Email == "ctbfadmin@g6.com" && Password == "Admin2003")
-            {
-                await JS.InvokeVoidAsync("localStorage.setItem", "token", result.Token);
-                await JS.InvokeVoidAsync("localStorage.setItem", "user_id", result.UserId);
-                await JS.InvokeVoidAsync("localStorage.setItem", "role", "admin");
+            Email = Email,
+            Password = Password
+        };
 
+        var result = await ApiService.LoginAsync(user);
+        if (result != null && !string.IsNullOrEmpty(result.Token))
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "token", result.Token);
+            await JS.InvokeVoidAsync("localStorage.setItem", "user_id", result.UserId);
+
+            // ✅ Stocke aussi le rôle pour l'app entière si besoin
+            var role = IsAdmin ? "admin" : "user";
+            await JS.InvokeVoidAsync("localStorage.setItem", "role", role);
+
+            // ✅ Redirige selon le rôle
+            if (IsAdmin)
+            {
                 Navigation.NavigateTo("/admin");
             }
             else
             {
-                Message = "Accès refusé. Identifiants administrateur invalides.";
-                return;
+                Navigation.NavigateTo("/dashboard");
             }
         }
         else
         {
-            // ✅ Connexion normale pour utilisateur
-            await JS.InvokeVoidAsync("localStorage.setItem", "token", result.Token);
-            await JS.InvokeVoidAsync("localStorage.setItem", "user_id", result.UserId);
-            await JS.InvokeVoidAsync("localStorage.setItem", "role", "user");
-
-            Navigation.NavigateTo("/dashboard");
+            Message = "Email ou mot de passe incorrect.";
         }
     }
-    else
-    {
-        Message = "Email ou mot de passe incorrect.";
-    }
-}
-
 
     private void GoToRegister()
     {
@@ -153,6 +134,3 @@ private async Task LoginUser()
         margin-top: 10px;
     }
 </style>
-
-
-
