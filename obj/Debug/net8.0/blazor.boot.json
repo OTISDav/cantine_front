@@ -1,15 +1,15 @@
 {
   "mainAssemblyName": "FrontendApp",
   "resources": {
-    "hash": "sha256-W0TQ2UoBrepIYU8AOmVD59qEJbp4YPIc5wswClF81rc=",
+    "hash": "sha256-PJN0udyaQ59LaHvPgLysFzkwJd/Yl4Jztz6QCP/Z0Uk=",
     "jsModuleNative": {
-      "dotnet.native.8.0.17.5qstm1en00.js": "sha256-YyxJV6dv935qHoQAmjB+2qRjHeGpm4SyWxE0T/KvsIE="
+      "dotnet.native.8.0.16.xrfipi03zq.js": "sha256-RiGT44TFZmHOY+Oqvb8o8r+BJVWex6+dPxFxrOiWvFY="
     },
     "jsModuleRuntime": {
-      "dotnet.runtime.8.0.17.bzkjkeq7ys.js": "sha256-nlm9ZX+9Z8SHWuCfVhHT5pkK9QzTgBn3opfL6mMas20="
+      "dotnet.runtime.8.0.16.qihjpvfhva.js": "sha256-t76BRXwt7ie+t1popBz8/uUmIQCWeGU9XALjF0psLNw="
     },
     "wasmNative": {
-      "dotnet.native.wasm": "sha256-Ni0Zae8QxYDdca2Vx+9v/wRw4wb3jSGA6suhCmG04n8="
+      "dotnet.native.wasm": "sha256-UiaFtxLHzlxisuBqZWMdl4IYCuHWyjZuv8yURy9ZnqQ="
     },
     "icu": {
       "icudt_CJK.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -208,10 +208,10 @@
       "mscorlib.wasm": "sha256-Im6xq+lOse4P/VnAyrA3hwPstV67V5dB0EwQWcjipyE=",
       "netstandard.wasm": "sha256-PK0GLtj6kQVtZPzq0FZlnSdHh7geujg80LqKdJXA4pI=",
       "System.Private.CoreLib.wasm": "sha256-gEwccs7GbRSPGmeWBOKxNroYfyM+mZ7hqbP3ki1iwX0=",
-      "FrontendApp.wasm": "sha256-hdNPVs/MS4+RaXSXVbqoYFOmInSnmRFuQomFifmvEz8="
+      "FrontendApp.wasm": "sha256-SmOoB9e0+PEneel9uozh2JwTvEpC2xdB8tM7FRgugWw="
     },
     "pdb": {
-      "FrontendApp.pdb": "sha256-NwE+R22Smy+z2YrhZz7fm5P8RgAMGw2E4k3ku9irLi0="
+      "FrontendApp.pdb": "sha256-SGDT6B9Zc7GOubKW2kK6uGlD1xt72TX1pnDdp5iwYmI="
     }
   },
   "cacheBootResources": true,
