@@ -22,20 +22,28 @@ namespace FrontendApp.Services
                 Password = password
             };
 
-            var response = await _api.LoginAsync(loginDto);
+            // Appelle le LoginAsync de ApiService qui doit retourner AuthResponseDto
+            var authResponse = await _api.LoginAsync(loginDto);
 
-            if (response != null && !string.IsNullOrEmpty(response.Token))
+            // Vérifie si la réponse n'est pas nulle et si le token et l'UserId sont présents
+            if (authResponse != null && !string.IsNullOrEmpty(authResponse.Token) && !string.IsNullOrEmpty(authResponse.UserId))
             {
-                await _storage.SetAsync("auth_token", response.Token);
-                return response.Token;
+                // Stocke le token
+                await _storage.SetAsync("auth_token", authResponse.Token);
+                // Stocke l'ID utilisateur
+                await _storage.SetAsync("user_id", authResponse.UserId); // <-- Ajout de cette ligne cruciale
+
+                return authResponse.Token; // Retourne le token comme indiqué par la signature de LoginAsync
             }
 
-            return null;
+            return null; // La connexion a échoué ou les données sont incomplètes
         }
 
         public async Task LogoutAsync()
         {
             await _storage.RemoveAsync("auth_token");
+            await _storage.RemoveAsync("user_id"); // <-- Ajout pour supprimer aussi l'ID utilisateur
+            // Si vous avez d'autres données liées à l'utilisateur, supprimez-les ici.
         }
     }
 }

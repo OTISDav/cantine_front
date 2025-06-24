@@ -18,8 +18,8 @@ else
             <tr>
                 <th>Date</th>
                 <th>Menu</th>
-                <th>statut</th>
-                @* <th>Action</th> *@
+                <th>Quantité</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -54,7 +54,7 @@ else
 
 @code {
     private List<ReservationDto> reservations = new();
-    private ReservationDto newReservation = new()
+    private ReservationCreateDTO newReservation = new() // Correction : c'est un ReservationCreateDTO
     {
         UserId = "default-user-id"
     };
