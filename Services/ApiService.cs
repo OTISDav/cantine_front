@@ -105,11 +105,33 @@ namespace FrontendApp.Services
 
 
         // ❌ Supprimer une réservation
-        public async Task<bool> DeleteReservationAsync(string reservationId)
+      // FrontendApp/Services/ApiService.cs
+
+// ... (vos autres méthodes ApiService) ...
+
+public async Task<bool> DeleteReservationAsync(int reservationId)
         {
-            await SetAuthHeaderAsync();
-            var response = await _httpClient.DeleteAsync($"api/Reservation/{reservationId}");
-            return response.IsSuccessStatusCode;
+            try
+            {
+                // Assurez-vous que l'URL de votre API est correcte, par ex. "api/Reservation/{reservationId}"
+                var response = await _httpClient.DeleteAsync($"api/Reservation/{reservationId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Erreur lors de l'annulation de la réservation : {response.StatusCode} - {errorContent}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception lors de l'annulation de la réservation : {ex.Message}");
+                return false;
+            }
         }
     }
 }

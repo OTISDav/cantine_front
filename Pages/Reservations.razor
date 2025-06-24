@@ -85,10 +85,37 @@ else
         }
     }
 
-    private void AnnulerReservation(ReservationDto reservation)
+   private async Task AnnulerReservation(ReservationDto reservation)
     {
-        message = $"Réservation du {reservation.ReservationDate.ToShortDateString()} annulée (fictif).";
-        reservations.Remove(reservation);
+        if (reservation == null)
+        {
+            message = "❌ Erreur : Réservation invalide.";
+            return;
+        }
+
+        // Demander confirmation à l'utilisateur
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir annuler la réservation du {reservation.ReservationDate.ToShortDateString()} (ID: {reservation.Id}) ?");
+
+        if (confirmed)
+        {
+            // Appeler l'API pour annuler la réservation
+            bool success = await ApiService.DeleteReservationAsync(reservation.Id);
+
+            if (success)
+            {
+                message = "✅ Réservation annulée avec succès.";
+                // Supprime la réservation de la liste locale pour mettre à jour l'affichage
+                reservations.Remove(reservation); 
+            }
+            else
+            {
+                message = "❌ Échec de l'annulation de la réservation. Veuillez réessayer.";
+            }
+        }
+        else
+        {
+            message = "Annulation de la réservation annulée par l'utilisateur.";
+        }
     }
 
     private void AllerVersMenu()
