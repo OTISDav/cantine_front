@@ -37,6 +37,22 @@
             <InputText id="boisson" @bind-Value="newMenu.Boisson" placeholder="Boisson" />
             <ValidationMessage For="@(() => newMenu.Boisson)" />
         </div>
+
+        <div class="form-group">
+    <label for="prix">Prix:</label>
+    <InputNumber id="prix" @bind-Value="newMenu.Prix" placeholder="Prix en FCFA" />
+    <ValidationMessage For="@(() => newMenu.Prix)" />
+</div>
+
+<div class="form-group">
+    <label for="photo">Photo (image du plat):</label>
+    <InputFile OnChange="HandlePhotoUpload" accept="image/*" />
+    @if (!string.IsNullOrEmpty(uploadedPhotoName))
+    {
+        <p>Fichier sélectionné : @uploadedPhotoName</p>
+    }
+</div>
+
         <button class="btn btn-primary" type="submit" disabled="@isLoading">Créer</button>
     </EditForm>
 </section>
@@ -167,6 +183,9 @@
     private string? message;
     private bool isErrorMessage;
     private bool isLoading = true; // Indique si une opération de chargement/traitement est en cours
+    IBrowserFile? uploadedPhoto;
+    string? uploadedPhotoName;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -229,6 +248,19 @@
             isLoading = false;
         }
     }
+    // Gérer le téléchargement de la photo
+    private async Task HandlePhotoUpload(InputFileChangeEventArgs e)
+{
+    uploadedPhoto = e.File;
+    uploadedPhotoName = uploadedPhoto.Name;
+
+    // Si tu veux l'uploader vers l'API maintenant, tu peux faire ça ici :
+    // var result = await ApiService.UploadPhotoAsync(uploadedPhoto);
+    // if (result != null) {
+    //     newMenu.PhotoUrl = result.Url;
+    // }
+}
+
 
     // Supprimer un menu
     private async Task DeleteMenu(int id)
@@ -297,7 +329,7 @@
     // Marquer une réservation comme prête
     private async Task MarquerCommePret(int reservationId)
     {
-        // Cette fonction est une simulation. En réalité, vous voudriez appeler une API.
+        // Cette fonction est une simulation. En réalité, on voudra appeler une API.
         // Exemple d'appel API hypothétique:
         // var result = await ApiService.UpdateReservationStatusAsync(reservationId, "Pret");
         // if (result) {

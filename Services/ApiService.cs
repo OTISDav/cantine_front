@@ -105,11 +105,11 @@ namespace FrontendApp.Services
 
 
         // ❌ Supprimer une réservation
-      // FrontendApp/Services/ApiService.cs
+        // FrontendApp/Services/ApiService.cs
 
-// ... (vos autres méthodes ApiService) ...
+        // ... (vos autres méthodes ApiService) ...
 
-public async Task<bool> DeleteReservationAsync(int reservationId)
+        public async Task<bool> DeleteReservationAsync(int reservationId)
         {
             try
             {
@@ -137,10 +137,11 @@ public async Task<bool> DeleteReservationAsync(int reservationId)
         // 📝 Créer Menu
         public async Task<bool> CreateMenuAsync(MenuDto menu)
         {
-            await SetAuthHeaderAsync(); // 🔐 important
+            await SetAuthHeaderAsync();
             var response = await _httpClient.PostAsJsonAsync("api/Menu", menu);
             return response.IsSuccessStatusCode;
         }
+
 
         // 📝 Supprimer Menu
         public async Task<bool> DeleteMenuAsync(int menuId)
