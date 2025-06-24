@@ -133,5 +133,35 @@ public async Task<bool> DeleteReservationAsync(int reservationId)
                 return false;
             }
         }
+
+        // 📝 Créer Menu
+        public async Task<bool> CreateMenuAsync(MenuDto menu)
+        {
+            await SetAuthHeaderAsync(); // 🔐 important
+            var response = await _httpClient.PostAsJsonAsync("api/Menu", menu);
+            return response.IsSuccessStatusCode;
+        }
+
+        // 📝 Supprimer Menu
+        public async Task<bool> DeleteMenuAsync(int menuId)
+        {
+            await SetAuthHeaderAsync(); // 🔐 important
+            var response = await _httpClient.DeleteAsync($"api/Menu/{menuId}");
+            return response.IsSuccessStatusCode;
+        }
+
+        // 📝 Obtenir les annotations
+        public async Task<List<AnnotationDto>> GetAnnotationsAsync()
+        {
+            await SetAuthHeaderAsync(); // 🔐 important
+            var response = await _httpClient.GetAsync("api/Annotation");
+            response.EnsureSuccessStatusCode();
+
+            var annotations = await response.Content.ReadFromJsonAsync<List<AnnotationDto>>();
+            return annotations ?? new List<AnnotationDto>();
+        }
+
+
+
     }
 }

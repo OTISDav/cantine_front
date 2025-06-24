@@ -11,6 +11,12 @@
     <input @bind="Email" placeholder="Email" type="email" />
     <input @bind="Password" placeholder="Mot de passe" type="password" />
 
+    <!-- ✅ Ajout d'une checkbox admin -->
+    <label>
+        <input type="checkbox" @bind="IsAdmin" />
+        Je suis un administrateur
+    </label>
+
     <button class="btn btn-primary" @onclick="LoginUser">Se connecter</button>
     <button class="btn btn-link" @onclick="GoToRegister">Créer un compte</button>
 
@@ -23,6 +29,7 @@
 @code {
     private string Email = "";
     private string Password = "";
+    private bool IsAdmin = false;
     private string Message = "";
 
     private async Task LoginUser()
@@ -37,7 +44,21 @@
         if (result != null && !string.IsNullOrEmpty(result.Token))
         {
             await JS.InvokeVoidAsync("localStorage.setItem", "token", result.Token);
-            Navigation.NavigateTo("/dashboard");
+            await JS.InvokeVoidAsync("localStorage.setItem", "user_id", result.UserId);
+
+            // ✅ Stocke aussi le rôle pour l'app entière si besoin
+            var role = IsAdmin ? "admin" : "user";
+            await JS.InvokeVoidAsync("localStorage.setItem", "role", role);
+
+            // ✅ Redirige selon le rôle
+            if (IsAdmin)
+            {
+                Navigation.NavigateTo("/admin");
+            }
+            else
+            {
+                Navigation.NavigateTo("/dashboard");
+            }
         }
         else
         {
@@ -64,13 +85,18 @@
         gap: 12px;
     }
 
-    input {
+    input[type="email"],
+    input[type="password"] {
         padding: 10px;
         border: 1px solid #ced4da;
         border-radius: 4px;
         font-size: 16px;
         width: 100%;
         box-sizing: border-box;
+    }
+
+    input[type="checkbox"] {
+        margin-right: 6px;
     }
 
     .btn {

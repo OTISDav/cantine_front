@@ -1,0 +1,209 @@
+@page "/admin"
+@using FrontendApp.Models
+@using FrontendApp.Services
+@inject ApiService ApiService
+@inject IJSRuntime JS
+
+<h2 class="admin-title">🎛️ Dashboard Administrateur</h2>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert success">@message</div>
+}
+
+<!-- SECTION : Créer un menu -->
+<section>
+    <h3>➕ Créer un nouveau menu</h3>
+    <div class="form-group">
+        <input type="date" @bind="newMenu.Date" />
+        <input placeholder="Plat principal" @bind="newMenu.PlatPrincipal" />
+        <input placeholder="Dessert" @bind="newMenu.Dessert" />
+        <input placeholder="Boisson" @bind="newMenu.Boisson" />
+        <button class="btn btn-primary" @onclick="CreateMenu">Créer</button>
+    </div>
+</section>
+
+<!-- SECTION : Liste des menus -->
+<section>
+    <h3>📋 Menus existants</h3>
+    @if (menus == null)
+    {
+        <p>Chargement des menus...</p>
+    }
+    else if (!menus.Any())
+    {
+        <p>Aucun menu enregistré.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Plat</th>
+                    <th>Dessert</th>
+                    <th>Boisson</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var menu in menus)
+                {
+                    <tr>
+                        <td>@menu.Date.ToShortDateString()</td>
+                        <td>@menu.PlatPrincipal</td>
+                        <td>@menu.Dessert</td>
+                        <td>@menu.Boisson</td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="() => DeleteMenu(menu.Id)">Supprimer</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
+
+<!-- SECTION : Réservations -->
+<section>
+    <h3>📦 Réservations</h3>
+    @if (reservations == null)
+    {
+        <p>Chargement...</p>
+    }
+    else if (!reservations.Any())
+    {
+        <p>Aucune réservation trouvée.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>MenuId</th>
+                    <th>Utilisateur</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in reservations)
+                {
+                    <tr>
+                        <td>@r.MenuId</td>
+                        <td>@r.UserId</td>
+                        <td>@r.ReservationDate.ToShortDateString()</td>
+                        <td>@r.Status</td>
+                        <td>
+                            <button class="btn btn-warning" @onclick="() => AnnulerReservation(r.Id)">Annuler</button>
+                            <button class="btn btn-success" @onclick="() => MarquerCommePret(r.Id)">Prête</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
+
+<!-- SECTION : Notes sur les menus -->
+<section>
+    <h3>📝 Notes des menus</h3>
+    @if (annotations == null)
+    {
+        <p>Chargement des notes...</p>
+    }
+    else if (!annotations.Any())
+    {
+        <p>Aucune note disponible.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Menu</th>
+                    <th>Note</th>
+                    <th>Commentaire</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in annotations)
+                {
+                    <tr>
+                        <td>@a.MenuId</td>
+                        <td>@a.Note</td>
+                        <td>@a.Commentaire</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
+
+@code {
+    private List<MenuDto>? menus;
+    private MenuDto newMenu = new();
+    private List<ReservationDto>? reservations;
+    private List<AnnotationDto>? annotations;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        menus = await ApiService.GetMenusAsync();
+        reservations = await ApiService.GetReservationsAsync();
+        annotations = await ApiService.GetAnnotationsAsync();
+    }
+
+    // Créer un menu
+    private async Task CreateMenu()
+    {
+        var created = await ApiService.CreateMenuAsync(newMenu);
+        if (created)
+        {
+            message = "Menu créé avec succès.";
+            menus = await ApiService.GetMenusAsync();
+            newMenu = new();
+        }
+        else
+        {
+            message = "Erreur lors de la création du menu.";
+        }
+    }
+
+    // Supprimer un menu
+    private async Task DeleteMenu(int id)
+    {
+        var result = await ApiService.DeleteMenuAsync(id);
+        if (result)
+        {
+            message = "Menu supprimé.";
+            menus = await ApiService.GetMenusAsync();
+        }
+        else
+        {
+            message = "Échec de la suppression.";
+        }
+    }
+
+    // Annuler une réservation
+    private async Task AnnulerReservation(int reservationId)
+    {
+        var result = await ApiService.DeleteReservationAsync(reservationId.ToString());
+        if (result)
+        {
+            message = "Réservation annulée.";
+            reservations = await ApiService.GetReservationsAsync();
+        }
+        else
+        {
+            message = "Erreur lors de l'annulation.";
+        }
+    }
+
+    // Marquer une réservation comme prête
+    private async Task MarquerCommePret(int reservationId)
+    {
+        message = $"La réservation #{reservationId} est marquée comme prête (simulation).";
+    }
+}
