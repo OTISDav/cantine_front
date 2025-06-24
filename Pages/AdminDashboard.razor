@@ -8,29 +8,47 @@
 
 @if (!string.IsNullOrEmpty(message))
 {
-    <div class="alert success">@message</div>
+    <div class="alert @(isErrorMessage ? "error" : "success")">@message</div>
 }
 
-<!-- SECTION : Créer un menu -->
 <section>
     <h3>➕ Créer un nouveau menu</h3>
-    <div class="form-group">
-        <input type="date" @bind="newMenu.Date" />
-        <input placeholder="Plat principal" @bind="newMenu.PlatPrincipal" />
-        <input placeholder="Dessert" @bind="newMenu.Dessert" />
-        <input placeholder="Boisson" @bind="newMenu.Boisson" />
-        <button class="btn btn-primary" @onclick="CreateMenu">Créer</button>
-    </div>
+    <EditForm Model="@newMenu" OnValidSubmit="@CreateMenu" OnInvalidSubmit="@(() => ShowMessage("Veuillez remplir tous les champs obligatoires du menu.", true))">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="menuDate">Date:</label>
+            <InputDate id="menuDate" @bind-Value="newMenu.Date" />
+            <ValidationMessage For="@(() => newMenu.Date)" />
+        </div>
+        <div class="form-group">
+            <label for="platPrincipal">Plat principal:</label>
+            <InputText id="platPrincipal" @bind-Value="newMenu.PlatPrincipal" placeholder="Plat principal" />
+            <ValidationMessage For="@(() => newMenu.PlatPrincipal)" />
+        </div>
+        <div class="form-group">
+            <label for="dessert">Dessert:</label>
+            <InputText id="dessert" @bind-Value="newMenu.Dessert" placeholder="Dessert" />
+            <ValidationMessage For="@(() => newMenu.Dessert)" />
+        </div>
+        <div class="form-group">
+            <label for="boisson">Boisson:</label>
+            <InputText id="boisson" @bind-Value="newMenu.Boisson" placeholder="Boisson" />
+            <ValidationMessage For="@(() => newMenu.Boisson)" />
+        </div>
+        <button class="btn btn-primary" type="submit" disabled="@isLoading">Créer</button>
+    </EditForm>
 </section>
 
-<!-- SECTION : Liste des menus -->
+
 <section>
     <h3>📋 Menus existants</h3>
-    @if (menus == null)
+    @if (isLoading && menus == null)
     {
         <p>Chargement des menus...</p>
     }
-    else if (!menus.Any())
+    else if (menus == null || !menus.Any())
     {
         <p>Aucun menu enregistré.</p>
     }
@@ -55,7 +73,7 @@
                         <td>@menu.Dessert</td>
                         <td>@menu.Boisson</td>
                         <td>
-                            <button class="btn btn-danger" @onclick="() => DeleteMenu(menu.Id)">Supprimer</button>
+                            <button class="btn btn-danger" @onclick="() => DeleteMenu(menu.Id)" disabled="@isLoading">Supprimer</button>
                         </td>
                     </tr>
                 }
@@ -64,14 +82,14 @@
     }
 </section>
 
-<!-- SECTION : Réservations -->
+
 <section>
     <h3>📦 Réservations</h3>
-    @if (reservations == null)
+    @if (isLoading && reservations == null)
     {
-        <p>Chargement...</p>
+        <p>Chargement des réservations...</p>
     }
-    else if (!reservations.Any())
+    else if (reservations == null || !reservations.Any())
     {
         <p>Aucune réservation trouvée.</p>
     }
@@ -80,10 +98,10 @@
         <table>
             <thead>
                 <tr>
-                    <th>MenuId</th>
+                    @* <th>MenuId</th> *@
                     <th>Utilisateur</th>
                     <th>Date</th>
-                    <th>Status</th>
+                    <th>Statut</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -91,13 +109,13 @@
                 @foreach (var r in reservations)
                 {
                     <tr>
-                        <td>@r.MenuId</td>
-                        <td>@r.UserId</td>
+                        @* <td>@r.MenuId</td> *@
+                        <td>@r.UserName</td>
                         <td>@r.ReservationDate.ToShortDateString()</td>
                         <td>@r.Status</td>
                         <td>
-                            <button class="btn btn-warning" @onclick="() => AnnulerReservation(r.Id)">Annuler</button>
-                            <button class="btn btn-success" @onclick="() => MarquerCommePret(r.Id)">Prête</button>
+                            <button class="btn btn-warning" @onclick="() => AnnulerReservation(r.Id)" disabled="@isLoading">Annuler</button>
+                            <button class="btn btn-success" @onclick="() => MarquerCommePret(r.Id)" disabled="@isLoading">Prête</button>
                         </td>
                     </tr>
                 }
@@ -106,14 +124,14 @@
     }
 </section>
 
-<!-- SECTION : Notes sur les menus -->
+
 <section>
     <h3>📝 Notes des menus</h3>
-    @if (annotations == null)
+    @if (isLoading && annotations == null)
     {
         <p>Chargement des notes...</p>
     }
-    else if (!annotations.Any())
+    else if (annotations == null || !annotations.Any())
     {
         <p>Aucune note disponible.</p>
     }
@@ -143,67 +161,154 @@
 
 @code {
     private List<MenuDto>? menus;
-    private MenuDto newMenu = new();
+    private MenuDto newMenu = new() { Date = DateTime.Now }; // Initialise la date à aujourd'hui
     private List<ReservationDto>? reservations;
     private List<AnnotationDto>? annotations;
     private string? message;
+    private bool isErrorMessage;
+    private bool isLoading = true; // Indique si une opération de chargement/traitement est en cours
 
     protected override async Task OnInitializedAsync()
     {
-        menus = await ApiService.GetMenusAsync();
-        reservations = await ApiService.GetReservationsAsync();
-        annotations = await ApiService.GetAnnotationsAsync();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            menus = await ApiService.GetMenusAsync();
+            reservations = await ApiService.GetReservationsAsync();
+            annotations = await ApiService.GetAnnotationsAsync();
+        }
+        catch (Exception ex)
+        {
+            await ShowMessage($"Erreur lors du chargement des données: {ex.Message}", true);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ShowMessage(string msg, bool isError = false)
+    {
+        message = msg;
+        isErrorMessage = isError;
+        StateHasChanged(); // S'assure que le message s'affiche immédiatement
+        await Task.Delay(5000); // Le message disparaîtra après 5 secondes
+        message = null;
+        StateHasChanged(); // Retire le message de l'interface
     }
 
     // Créer un menu
     private async Task CreateMenu()
     {
-        var created = await ApiService.CreateMenuAsync(newMenu);
-        if (created)
+        isLoading = true;
+        try
         {
-            message = "Menu créé avec succès.";
-            menus = await ApiService.GetMenusAsync();
-            newMenu = new();
+            var created = await ApiService.CreateMenuAsync(newMenu);
+            if (created)
+            {
+                await ShowMessage("Menu créé avec succès.");
+                await LoadData(); // Recharger toutes les données après création
+                newMenu = new() { Date = DateTime.Now }; // Réinitialiser le formulaire
+            }
+            else
+            {
+                await ShowMessage("Erreur lors de la création du menu. Vérifiez les données.", true);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            message = "Erreur lors de la création du menu.";
+            await ShowMessage($"Une erreur inattendue est survenue lors de la création du menu: {ex.Message}", true);
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 
     // Supprimer un menu
     private async Task DeleteMenu(int id)
     {
-        var result = await ApiService.DeleteMenuAsync(id);
-        if (result)
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", "Êtes-vous sûr de vouloir supprimer ce menu ? Cette action est irréversible.");
+        if (confirmed)
         {
-            message = "Menu supprimé.";
-            menus = await ApiService.GetMenusAsync();
-        }
-        else
-        {
-            message = "Échec de la suppression.";
+            isLoading = true;
+            try
+            {
+                var result = await ApiService.DeleteMenuAsync(id);
+                if (result)
+                {
+                    await ShowMessage("Menu supprimé avec succès.");
+                    await LoadData(); // Recharger les menus après suppression
+                }
+                else
+                {
+                    await ShowMessage("Échec de la suppression du menu.", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowMessage($"Une erreur inattendue est survenue lors de la suppression du menu: {ex.Message}", true);
+            }
+            finally
+            {
+                isLoading = false;
+            }
         }
     }
 
     // Annuler une réservation
+// Dans Admin.razor
     private async Task AnnulerReservation(int reservationId)
     {
-        var result = await ApiService.DeleteReservationAsync(reservationId.ToString());
-        if (result)
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir annuler la réservation #{reservationId} ?");
+        if (confirmed)
         {
-            message = "Réservation annulée.";
-            reservations = await ApiService.GetReservationsAsync();
-        }
-        else
-        {
-            message = "Erreur lors de l'annulation.";
+            isLoading = true;
+            try
+            {
+                // C'est ici que la correction s'applique :
+                var result = await ApiService.DeleteReservationAsync(reservationId); // <-- Supprimez .ToString()
+                if (result)
+                {
+                    await ShowMessage("Réservation annulée avec succès.");
+                    await LoadData();
+                }
+                else
+                {
+                    await ShowMessage("Erreur lors de l'annulation de la réservation.", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowMessage($"Une erreur inattendue est survenue lors de l'annulation de la réservation: {ex.Message}", true);
+            }
+            finally
+            {
+                isLoading = false;
+            }
         }
     }
 
     // Marquer une réservation comme prête
     private async Task MarquerCommePret(int reservationId)
     {
-        message = $"La réservation #{reservationId} est marquée comme prête (simulation).";
+        // Cette fonction est une simulation. En réalité, vous voudriez appeler une API.
+        // Exemple d'appel API hypothétique:
+        // var result = await ApiService.UpdateReservationStatusAsync(reservationId, "Pret");
+        // if (result) {
+        //     await ShowMessage($"La réservation #{reservationId} a été marquée comme prête.");
+        //     await LoadData();
+        // } else {
+        //     await ShowMessage("Erreur lors de la mise à jour du statut de la réservation.", true);
+        // }
+
+        await ShowMessage($"La réservation #{reservationId} est marquée comme prête (simulation).");
+        // Recharger les données si le statut est réellement mis à jour via une API
+        // await LoadData();
     }
 }
