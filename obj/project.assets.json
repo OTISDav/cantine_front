@@ -421,13 +421,13 @@
           }
         }
       },
-      "Microsoft.NET.ILLink.Tasks/8.0.17": {
+      "Microsoft.NET.ILLink.Tasks/8.0.16": {
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
         }
       },
-      "Microsoft.NET.Sdk.WebAssembly.Pack/8.0.17": {
+      "Microsoft.NET.Sdk.WebAssembly.Pack/8.0.16": {
         "type": "package",
         "build": {
           "build/Microsoft.NET.Sdk.WebAssembly.Pack.props": {},
@@ -871,13 +871,13 @@
           }
         }
       },
-      "Microsoft.NET.ILLink.Tasks/8.0.17": {
+      "Microsoft.NET.ILLink.Tasks/8.0.16": {
         "type": "package",
         "build": {
           "build/Microsoft.NET.ILLink.Tasks.props": {}
         }
       },
-      "Microsoft.NET.Sdk.WebAssembly.Pack/8.0.17": {
+      "Microsoft.NET.Sdk.WebAssembly.Pack/8.0.16": {
         "type": "package",
         "build": {
           "build/Microsoft.NET.Sdk.WebAssembly.Pack.props": {},
@@ -1713,10 +1713,10 @@
         "microsoft.jsinterop.webassembly.nuspec"
       ]
     },
-    "Microsoft.NET.ILLink.Tasks/8.0.17": {
-      "sha512": "x5/y4l8AtshpBOrCZdlE4txw8K3e3s9meBFeZeR3l8hbbku2V7kK6ojhXvrbjg1rk3G+JqL1BI26gtgc1ZrdUw==",
+    "Microsoft.NET.ILLink.Tasks/8.0.16": {
+      "sha512": "0H1QaKpVibe++Zx6EYJQGhrpfz2bBPGiQ7Rpsmx8I3+oKv+ZRRIfVfmcj50KuZlhhRE6V02y5bUjP+V2oPM2ng==",
       "type": "package",
-      "path": "microsoft.net.illink.tasks/8.0.17",
+      "path": "microsoft.net.illink.tasks/8.0.16",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
@@ -1730,7 +1730,7 @@
         "build/Microsoft.NET.ILLink.Analyzers.props",
         "build/Microsoft.NET.ILLink.Tasks.props",
         "build/Microsoft.NET.ILLink.targets",
-        "microsoft.net.illink.tasks.8.0.17.nupkg.sha512",
+        "microsoft.net.illink.tasks.8.0.16.nupkg.sha512",
         "microsoft.net.illink.tasks.nuspec",
         "tools/net472/ILLink.Tasks.dll",
         "tools/net472/ILLink.Tasks.dll.config",
@@ -1764,10 +1764,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.NET.Sdk.WebAssembly.Pack/8.0.17": {
-      "sha512": "wufm5kIsP5PlG54bahrhJDPbN114ru7mIYOdyVQS4sCr3811SLqcn1X6rg3mxZgGxRbyfMcMBXcg5P2HV/MRYQ==",
+    "Microsoft.NET.Sdk.WebAssembly.Pack/8.0.16": {
+      "sha512": "Lu5e8iqQzLnMrD0WmHz6yw7EEauaP9Ip5RxtZgSmi1GhcymZvL1MU6vFerVHbT+FPuqHSlEyM3rXtcQE8NElAw==",
       "type": "package",
-      "path": "microsoft.net.sdk.webassembly.pack/8.0.17",
+      "path": "microsoft.net.sdk.webassembly.pack/8.0.16",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
@@ -1795,7 +1795,7 @@
         "build/Microsoft.NET.Sdk.WebAssembly.Pack.props",
         "build/Microsoft.NET.Sdk.WebAssembly.Pack.targets",
         "build/Wasm.web.config",
-        "microsoft.net.sdk.webassembly.pack.8.0.17.nupkg.sha512",
+        "microsoft.net.sdk.webassembly.pack.8.0.16.nupkg.sha512",
         "microsoft.net.sdk.webassembly.pack.nuspec",
         "tools/net472/Microsoft.NET.Sdk.WebAssembly.Pack.Tasks.dll",
         "tools/net472/Microsoft.NET.WebAssembly.Webcil.dll",
@@ -1837,24 +1837,24 @@
     "net8.0": [
       "Microsoft.AspNetCore.Components.WebAssembly >= 8.0.16",
       "Microsoft.AspNetCore.Components.WebAssembly.DevServer >= 8.0.16",
-      "Microsoft.NET.ILLink.Tasks >= 8.0.17",
-      "Microsoft.NET.Sdk.WebAssembly.Pack >= 8.0.17"
+      "Microsoft.NET.ILLink.Tasks >= 8.0.16",
+      "Microsoft.NET.Sdk.WebAssembly.Pack >= 8.0.16"
     ]
   },
   "packageFolders": {
-    "/home/otis/.nuget/packages/": {}
+    "C:\\Users\\OUMAROU\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/otis/Téléchargements/frontend/FrontendApp/FrontendApp.csproj",
+      "projectUniqueName": "D:\\235\\dotnet\\github_gest_cantine\\cantine_front\\FrontendApp.csproj",
       "projectName": "FrontendApp",
-      "projectPath": "/home/otis/Téléchargements/frontend/FrontendApp/FrontendApp.csproj",
-      "packagesPath": "/home/otis/.nuget/packages/",
-      "outputPath": "/home/otis/Téléchargements/frontend/FrontendApp/obj/",
+      "projectPath": "D:\\235\\dotnet\\github_gest_cantine\\cantine_front\\FrontendApp.csproj",
+      "packagesPath": "C:\\Users\\OUMAROU\\.nuget\\packages\\",
+      "outputPath": "D:\\235\\dotnet\\github_gest_cantine\\cantine_front\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/otis/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\OUMAROU\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -1872,6 +1872,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -1890,13 +1895,13 @@
           "Microsoft.NET.ILLink.Tasks": {
             "suppressParent": "All",
             "target": "Package",
-            "version": "[8.0.17, )",
+            "version": "[8.0.16, )",
             "autoReferenced": true
           },
           "Microsoft.NET.Sdk.WebAssembly.Pack": {
             "suppressParent": "All",
             "target": "Package",
-            "version": "[8.0.17, )",
+            "version": "[8.0.16, )",
             "autoReferenced": true
           }
         },
@@ -1914,7 +1919,7 @@
         "downloadDependencies": [
           {
             "name": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm",
-            "version": "[8.0.17, 8.0.17]"
+            "version": "[8.0.16, 8.0.16]"
           }
         ],
         "frameworkReferences": {
@@ -1922,7 +1927,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.117/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.409/PortableRuntimeIdentifierGraph.json"
       }
     },
     "runtimes": {

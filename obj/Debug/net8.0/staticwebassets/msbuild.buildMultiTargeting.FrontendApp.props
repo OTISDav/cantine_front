@@ -1,3 +1,3 @@
 ﻿<Project>
-  <Import Project="../build/FrontendApp.props" />
+  <Import Project="..\build\FrontendApp.props" />
 </Project>

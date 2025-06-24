@@ -11,10 +11,12 @@ namespace FrontendApp.Models
 
     public class ReservationCreateDTO
     {
+        public string UserId { get; set; } = string.Empty; // ✅ Nécessaire pour associer la réservation à l'utilisateur
         public int MenuId { get; set; }
         public DateTime ReservationDate { get; set; }
         public string Status { get; set; } = string.Empty;
     }
+
 
     public class ReservationUpdateDTO
     {

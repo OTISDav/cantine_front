@@ -2,6 +2,8 @@
 @using FrontendApp.Models
 @using FrontendApp.Services
 @inject ApiService ApiService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
 
 <h3>Nos Menus</h3>
 
@@ -18,30 +20,69 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Nom</th>
-                <th>Description</th>
-                <th>Prix</th>
+                <th>Date</th>
+                <th>Plat principal</th>
+                <th>Dessert</th>
+                <th>Boisson</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var menu in menus)
             {
                 <tr>
-                    <td>@menu.Date</td>
+                    <td>@menu.Date.ToString("dd/MM/yyyy")</td>
                     <td>@menu.PlatPrincipal</td>
                     <td>@menu.Dessert</td>
                     <td>@menu.Boisson</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => Reserver(menu.Id)">Réserver</button>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 }
 
+@if (!string.IsNullOrEmpty(message))
+{
+    <p style="color: green;">@message</p>
+}
+
 @code {
-    private List<MenuDto>? menus; // ✅ nullable
+    private List<MenuDto>? menus;
+    private string? message;
 
     protected override async Task OnInitializedAsync()
     {
         menus = await ApiService.GetMenusAsync();
+    }
+
+    private async Task Reserver(int menuId)
+    {
+        var userId = await JS.InvokeAsync<string>("localStorage.getItem", "user_id");
+        if (string.IsNullOrEmpty(userId))
+        {
+            message = "Utilisateur non connecté.";
+            return;
+        }
+
+        var reservation = new ReservationDto
+        {
+            MenuId = menuId,
+            UserId = userId,
+            ReservationDate = DateTime.Now,
+            Status = "En attente"
+        };
+
+        var created = await ApiService.CreateReservationAsync(reservation);
+        if (created != null)
+        {
+            message = "✅ Réservation effectuée avec succès.";
+        }
+        else
+        {
+            message = "❌ Échec de la réservation.";
+        }
     }
 }
