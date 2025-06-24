@@ -1,0 +1,193 @@
+@page "/dashboard"
+@using FrontendApp.Services
+@using FrontendApp.Models
+@inject ApiService ApiService
+
+<h2>Bienvenue!</h2>
+
+<div class="dashboard">
+    <div class="card" @onclick="@(() => ToggleCard("menus"))">
+        <h3>Menus du jour</h3>
+    </div>
+
+    <div class="card" @onclick="@(() => ToggleCard("reservations"))">
+        <h3>Mes réservations</h3>
+    </div>
+
+    <div class="card" @onclick="@(() => ToggleCard("notifications"))">
+        <h3>Notifications</h3>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(openedCard))
+{
+    <div class="overlay">
+        <div class="overlay-content">
+            <button class="close-btn" @onclick="CloseOverlay">X</button>
+
+            @if (openedCard == "menus")
+            {
+                <h3>Menus du jour</h3>
+                @if (menus == null)
+                {
+                    <p>Chargement des menus...</p>
+                }
+                else if (!menus.Any())
+                {
+                    <p>Aucun menu disponible.</p>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var menu in menus)
+                        {
+                            <li>@menu.Date - @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson </li>
+                        }
+                    </ul>
+                }
+            }
+            else if (openedCard == "reservations")
+            {
+                <h3>Mes réservations</h3>
+                @if (reservations == null)
+                {
+                    <p>Chargement des réservations...</p>
+                }
+                else if (!reservations.Any())
+                {
+                    <p>Aucune réservation.</p>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var res in reservations)
+                        {
+                            <li>@res.ReservationDate.ToShortDateString() - Menu ID: @res.MenuId (x@res.Quantite)</li>
+                        }
+                    </ul>
+                }
+                <a href="/reservations" class="btn">Nouvelle réservation</a>
+            }
+            else if (openedCard == "notifications")
+            {
+                <h3>Notifications</h3>
+                <p>Aucune notification pour le moment.</p>
+                @* Tu pourras remplacer ceci par une liste dynamique plus tard *@
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private string? openedCard;
+    private List<MenuDto>? menus;
+    private List<ReservationDto>? reservations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        menus = await ApiService.GetMenusAsync();
+        reservations = await ApiService.GetReservationsAsync();
+    }
+
+    private void ToggleCard(string cardName)
+    {
+        if (openedCard == cardName)
+            openedCard = null;
+        else
+            openedCard = cardName;
+    }
+
+    private void CloseOverlay()
+    {
+        openedCard = null;
+    }
+}
+
+<style>
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+    .card {
+        background: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 30px 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-align: center;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .overlay-content {
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 450px;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #ff4d4d;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+    }
+
+    .btn {
+        margin-top: 10px;
+        display: inline-block;
+        padding: 8px 12px;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+    }
+
+    .btn:hover {
+        background: #0056b3;
+    }
+
+    ul {
+        padding-left: 20px;
+    }
+
+    li {
+        margin-bottom: 10px;
+    }
+</style>
