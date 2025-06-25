@@ -11,11 +11,12 @@
     <input @bind="Email" placeholder="Email" type="email" />
     <input @bind="Password" placeholder="Mot de passe" type="password" />
 
-    <!-- ✅ Ajout d'une checkbox admin -->
+    @* ✅ Supprimez ou commentez la checkbox Admin pour des raisons de sécurité
+       Le rôle doit être déterminé par le backend.
     <label>
         <input type="checkbox" @bind="IsAdmin" />
         Je suis un administrateur
-    </label>
+    </label> *@
 
     <button class="btn btn-primary" @onclick="LoginUser">Se connecter</button>
     <button class="btn btn-link" @onclick="GoToRegister">Créer un compte</button>
@@ -29,7 +30,7 @@
 @code {
     private string Email = "";
     private string Password = "";
-    private bool IsAdmin = false;
+    // private bool IsAdmin = false; // Plus besoin de cette variable si le rôle vient de l'API
     private string Message = "";
 
     private async Task LoginUser()
@@ -40,23 +41,27 @@
             Password = Password
         };
 
-        var result = await ApiService.LoginAsync(user);
+        var result = await ApiService.LoginAsync(user); // Cette méthode doit retourner AuthResponseDto avec le rôle
         if (result != null && !string.IsNullOrEmpty(result.Token))
         {
             await JS.InvokeVoidAsync("localStorage.setItem", "token", result.Token);
             await JS.InvokeVoidAsync("localStorage.setItem", "user_id", result.UserId);
 
-            // ✅ Stocke aussi le rôle pour l'app entière si besoin
-            var role = IsAdmin ? "admin" : "user";
-            await JS.InvokeVoidAsync("localStorage.setItem", "role", role);
+            // ✅ UTILISE LE RÔLE RENVOYÉ PAR L'API
+            await JS.InvokeVoidAsync("localStorage.setItem", "role", result.Role);
 
-            // ✅ Redirige selon le rôle
-            if (IsAdmin)
+            // ✅ Redirige selon le rôle réel de l'utilisateur renvoyé par l'API
+            if (result.Role == "Admin") // Compare avec la chaîne de rôle EXACTE renvoyée par l'API
             {
                 Navigation.NavigateTo("/admin");
             }
+            else if (result.Role == "User") // Si vous avez un rôle "User"
+            {
+                Navigation.NavigateTo("/dashboard");
+            }
             else
             {
+                // Gérer les rôles inconnus ou par défaut, par exemple rediriger vers un dashboard générique
                 Navigation.NavigateTo("/dashboard");
             }
         }
@@ -95,9 +100,12 @@
         box-sizing: border-box;
     }
 
+    /* Supprimer ou commenter le style de la checkbox si vous la retirez */
+    /*
     input[type="checkbox"] {
         margin-right: 6px;
     }
+    */
 
     .btn {
         padding: 10px;

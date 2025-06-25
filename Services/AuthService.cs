@@ -33,6 +33,8 @@ namespace FrontendApp.Services
                 // Stocke l'ID utilisateur
                 await _storage.SetAsync("user_id", authResponse.UserId); // <-- Ajout de cette ligne cruciale
 
+                await _storage.SetAsync("role", authResponse.Role); 
+
                 return authResponse.Token; // Retourne le token comme indiqué par la signature de LoginAsync
             }
 
@@ -43,6 +45,7 @@ namespace FrontendApp.Services
         {
             await _storage.RemoveAsync("auth_token");
             await _storage.RemoveAsync("user_id"); // <-- Ajout pour supprimer aussi l'ID utilisateur
+            await _storage.RemoveAsync("role");
             // Si vous avez d'autres données liées à l'utilisateur, supprimez-les ici.
         }
     }
