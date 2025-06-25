@@ -2,6 +2,7 @@
 @using FrontendApp.Services
 @using FrontendApp.Models
 @inject ApiService ApiService
+@inject IJSRuntime JS
 
 <h2>Bienvenue!</h2>
 
@@ -41,7 +42,7 @@
                     <ul>
                         @foreach (var menu in menus)
                         {
-                            <li>@menu.Date - @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson </li>
+                            <li>@menu.Date - @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson</li>
                         }
                     </ul>
                 }
@@ -59,12 +60,30 @@
                 }
                 else
                 {
-                    <ul>
-                        @foreach (var res in reservations)
-                        {
-                            <li>@res.ReservationDate.ToShortDateString() - Menu ID: @res.MenuId (x@res.Quantite)</li>
-                        }
-                    </ul>
+                    @foreach (var menu in menus)
+                    {
+                        <div class="menu-box">
+                            <strong>@menu.Date.ToShortDateString() :</strong> @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson
+
+                            @if (annotationsByMenu.TryGetValue(menu.Id, out var existingNote))
+                            {
+                                <p><strong>Note déjà donnée :</strong> @existingNote.Note/5</p>
+                                <p><strong>Commentaire :</strong> @existingNote.Commentaire</p>
+                            }
+                            else
+                            {
+                                <div class="note-form">
+                                    <label>Note (1 à 5) :</label>
+                                    <InputNumber @bind-Value="annotationsInputs[menu.Id].Note" Min="1" Max="5" />
+
+                                    <label>Commentaire :</label>
+                                    <InputText @bind-Value="annotationsInputs[menu.Id].Commentaire" />
+
+                                    <button class="btn" @onclick="@(() => EnvoyerNote(menu.Id))">Envoyer</button>
+                                </div>
+                            }
+                        </div>
+                    }
                 }
                 <a href="/reservations" class="btn">Nouvelle réservation</a>
             }
@@ -72,7 +91,6 @@
             {
                 <h3>Notifications</h3>
                 <p>Aucune notification pour le moment.</p>
-                @* Tu pourras remplacer ceci par une liste dynamique plus tard *@
             }
         </div>
     </div>
@@ -82,112 +100,59 @@
     private string? openedCard;
     private List<MenuDto>? menus;
     private List<ReservationDto>? reservations;
+    private Dictionary<int, AnnotationDto> annotationsInputs = new();
+    private Dictionary<int, AnnotationDto> annotationsByMenu = new();
 
     protected override async Task OnInitializedAsync()
     {
         menus = await ApiService.GetMenusAsync();
         reservations = await ApiService.GetReservationsAsync();
+        var mesNotes = await ApiService.GetAnnotationsParUtilisateurAsync();
+
+        foreach (var note in mesNotes)
+        {
+            annotationsByMenu[note.MenuId] = note;
+        }
+
+        foreach (var menu in menus)
+        {
+            if (!annotationsInputs.ContainsKey(menu.Id))
+                annotationsInputs[menu.Id] = new AnnotationDto();
+        }
     }
 
     private void ToggleCard(string cardName)
     {
-        if (openedCard == cardName)
-            openedCard = null;
-        else
-            openedCard = cardName;
+        openedCard = openedCard == cardName ? null : cardName;
     }
 
     private void CloseOverlay()
     {
         openedCard = null;
     }
+
+    private async Task EnvoyerNote(int menuId)
+    {
+        if (annotationsByMenu.ContainsKey(menuId))
+        {
+            await JS.InvokeVoidAsync("alert", "Vous avez déjà noté ce menu.");
+            return;
+        }
+
+        var note = annotationsInputs[menuId];
+        note.MenuId = menuId;
+
+        bool success = await ApiService.AjouterAnnotationAsync(note);
+        if (success)
+        {
+            annotationsByMenu[menuId] = note;
+            annotationsInputs[menuId] = new AnnotationDto(); // reset
+            await JS.InvokeVoidAsync("alert", "Note envoyée avec succès !");
+            StateHasChanged();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Erreur lors de l'envoi de la note.");
+        }
+    }
 }
-
-<style>
-    h2 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .dashboard {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-        padding: 0 20px;
-    }
-
-    .card {
-        background: #ffffff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 30px 20px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        text-align: center;
-    }
-
-    .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-
-    .overlay-content {
-        background: #fff;
-        padding: 30px;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 450px;
-        position: relative;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #ff4d4d;
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        cursor: pointer;
-    }
-
-    .btn {
-        margin-top: 10px;
-        display: inline-block;
-        padding: 8px 12px;
-        background: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        text-decoration: none;
-    }
-
-    .btn:hover {
-        background: #0056b3;
-    }
-
-    ul {
-        padding-left: 20px;
-    }
-
-    li {
-        margin-bottom: 10px;
-    }
-</style>

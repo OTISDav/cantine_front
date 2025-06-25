@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/otis/Téléchargements/frontend/FrontendApp/FrontendApp.csproj": {}
+    "D:\\235\\dotnet\\github_gest_cantine\\cantine_front\\FrontendApp.csproj": {}
   },
   "projects": {
-    "/home/otis/Téléchargements/frontend/FrontendApp/FrontendApp.csproj": {
+    "D:\\235\\dotnet\\github_gest_cantine\\cantine_front\\FrontendApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/otis/Téléchargements/frontend/FrontendApp/FrontendApp.csproj",
+        "projectUniqueName": "D:\\235\\dotnet\\github_gest_cantine\\cantine_front\\FrontendApp.csproj",
         "projectName": "FrontendApp",
-        "projectPath": "/home/otis/Téléchargements/frontend/FrontendApp/FrontendApp.csproj",
-        "packagesPath": "/home/otis/.nuget/packages/",
-        "outputPath": "/home/otis/Téléchargements/frontend/FrontendApp/obj/",
+        "projectPath": "D:\\235\\dotnet\\github_gest_cantine\\cantine_front\\FrontendApp.csproj",
+        "packagesPath": "C:\\Users\\OUMAROU\\.nuget\\packages\\",
+        "outputPath": "D:\\235\\dotnet\\github_gest_cantine\\cantine_front\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/otis/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\OUMAROU\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -32,6 +32,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -50,13 +55,13 @@
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.17, )",
+              "version": "[8.0.16, )",
               "autoReferenced": true
             },
             "Microsoft.NET.Sdk.WebAssembly.Pack": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.17, )",
+              "version": "[8.0.16, )",
               "autoReferenced": true
             }
           },
@@ -74,7 +79,7 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm",
-              "version": "[8.0.17, 8.0.17]"
+              "version": "[8.0.16, 8.0.16]"
             }
           ],
           "frameworkReferences": {
@@ -82,7 +87,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.117/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.409/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {

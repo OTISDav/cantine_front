@@ -13,67 +13,67 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = browser
 build_property.RootNamespace = FrontendApp
 build_property.RootNamespace = FrontendApp
-build_property.ProjectDir = /home/otis/Téléchargements/frontend/FrontendApp/
+build_property.ProjectDir = D:\235\dotnet\github_gest_cantine\cantine_front\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = false
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = /home/otis/Téléchargements/frontend/FrontendApp
+build_property.MSBuildProjectDirectory = D:\235\dotnet\github_gest_cantine\cantine_front
 build_property._RazorSourceGeneratorDebug = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/App.razor]
+[D:/235/dotnet/github_gest_cantine/cantine_front/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/AdminDashboard.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQWRtaW5EYXNoYm9hcmQucmF6b3I=
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/AdminDashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5EYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/Counter.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ291bnRlci5yYXpvcg==
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/Counter.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/Dashboard.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRGFzaGJvYXJkLnJhem9y
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGFzaGJvYXJkLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/Index.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSW5kZXgucmF6b3I=
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/Login.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTG9naW4ucmF6b3I=
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/Menu.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTWVudS5yYXpvcg==
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/Menu.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTWVudS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/Register.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUmVnaXN0ZXIucmF6b3I=
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/Register.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaXN0ZXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/Reservations.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUmVzZXJ2YXRpb25zLnJhem9y
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/Reservations.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVzZXJ2YXRpb25zLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Pages/Weather.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvV2VhdGhlci5yYXpvcg==
+[D:/235/dotnet/github_gest_cantine/cantine_front/Pages/Weather.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2VhdGhlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Shared/MainLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = U2hhcmVkL01haW5MYXlvdXQucmF6b3I=
+[D:/235/dotnet/github_gest_cantine/cantine_front/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Shared/NavMenu.razor]
-build_metadata.AdditionalFiles.TargetPath = U2hhcmVkL05hdk1lbnUucmF6b3I=
+[D:/235/dotnet/github_gest_cantine/cantine_front/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/_Imports.razor]
+[D:/235/dotnet/github_gest_cantine/cantine_front/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/home/otis/Téléchargements/frontend/FrontendApp/Layout/MainLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = TGF5b3V0L01haW5MYXlvdXQucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = b-nd55n5syol
+[D:/235/dotnet/github_gest_cantine/cantine_front/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-9ioi9xbv0t

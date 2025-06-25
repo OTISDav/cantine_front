@@ -167,6 +167,29 @@ namespace FrontendApp.Services
             return annotations ?? new List<AnnotationDto>();
         }
 
+        // 📝 Ajouter une annotation
+        public async Task<bool> AjouterAnnotationAsync(AnnotationDto annotation)
+        {
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.PostAsJsonAsync("api/Annotation", annotation);
+            return response.IsSuccessStatusCode;
+        }
+
+        // 🔐 Récupérer les annotations de l'utilisateur connecté
+        public async Task<List<AnnotationDto>> GetAnnotationsParUtilisateurAsync()
+        {
+            await SetAuthHeaderAsync(); // Assure l'envoi du token JWT
+            var response = await _httpClient.GetAsync("api/Annotation/User");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var annotations = await response.Content.ReadFromJsonAsync<List<AnnotationDto>>();
+                return annotations ?? new List<AnnotationDto>();
+            }
+
+            return new List<AnnotationDto>();
+        }
+
 
 
     }
