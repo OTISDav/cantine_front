@@ -39,19 +39,19 @@
         </div>
 
         <div class="form-group">
-    <label for="prix">Prix:</label>
-    <InputNumber id="prix" @bind-Value="newMenu.Prix" placeholder="Prix en FCFA" />
-    <ValidationMessage For="@(() => newMenu.Prix)" />
-</div>
+            <label for="prix">Prix:</label>
+            <InputNumber id="prix" @bind-Value="newMenu.Prix" placeholder="Prix en FCFA" />
+            <ValidationMessage For="@(() => newMenu.Prix)" />
+        </div>
 
-<div class="form-group">
-    <label for="photo">Photo (image du plat):</label>
-    <InputFile OnChange="HandlePhotoUpload" accept="image/*" />
-    @if (!string.IsNullOrEmpty(uploadedPhotoName))
-    {
-        <p>Fichier sélectionné : @uploadedPhotoName</p>
-    }
-</div>
+        <div class="form-group">
+            <label for="photo">Photo (image du plat):</label>
+            <InputFile OnChange="HandlePhotoUpload" accept="image/*" /> @* Corrigé: accept="image/*" *@
+            @if (!string.IsNullOrEmpty(uploadedPhotoName))
+            {
+                <p>Fichier sélectionné : @uploadedPhotoName</p>
+            }
+        </div>
 
         <button class="btn btn-primary" type="submit" disabled="@isLoading">Créer</button>
     </EditForm>
@@ -73,10 +73,12 @@
         <table>
             <thead>
                 <tr>
+                    <th>Photo</th>
                     <th>Date</th>
                     <th>Plat</th>
                     <th>Dessert</th>
                     <th>Boisson</th>
+                    <th>Prix</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -84,10 +86,23 @@
                 @foreach (var menu in menus)
                 {
                     <tr>
+                        <td>
+                            @* --- Affichage de l'image ici --- *@
+                            @if (!string.IsNullOrEmpty(menu.PhotoUrl))
+                            {
+                                <img src="https://localhost:7001/@menu.PhotoUrl" alt="Photo du menu" style="width: 100px; height: auto; border-radius: 5px;" />
+                            }
+                            else
+                            {
+                                <span>Pas de photo</span>
+                            }
+                            @* -------------------------------- *@
+                        </td>
                         <td>@menu.Date.ToShortDateString()</td>
                         <td>@menu.PlatPrincipal</td>
                         <td>@menu.Dessert</td>
                         <td>@menu.Boisson</td>
+                        <td>@menu.Prix.ToString("C")</td> @* Corrigé: Formater le prix *@
                         <td>
                             <button class="btn btn-danger" @onclick="() => DeleteMenu(menu.Id)" disabled="@isLoading">Supprimer</button>
                         </td>
@@ -119,6 +134,7 @@
                     <th>Date</th>
                     <th>Statut</th>
                     <th>Actions</th>
+
                 </tr>
             </thead>
             <tbody>
@@ -177,14 +193,15 @@
 
 @code {
     private List<MenuDto>? menus;
-    private MenuDto newMenu = new() { Date = DateTime.Now }; // Initialise la date à aujourd'hui
+    private MenuDto newMenu = new() { Date = DateTime.Now };
     private List<ReservationDto>? reservations;
     private List<AnnotationDto>? annotations;
     private string? message;
     private bool isErrorMessage;
-    private bool isLoading = true; // Indique si une opération de chargement/traitement est en cours
-    IBrowserFile? uploadedPhoto;
-    string? uploadedPhotoName;
+    private bool isLoading = true;
+    // IBrowserFile? uploadedPhoto; // Plus besoin de le stocker ici, on l'envoie directement
+    private string? uploadedPhotoName; // Pour afficher le nom du fichier sélectionné
+    private string? menuPhotoUrlFromUpload; // Pour stocker l'URL renvoyée par l'API après upload
 
 
     protected override async Task OnInitializedAsync()
@@ -215,10 +232,10 @@
     {
         message = msg;
         isErrorMessage = isError;
-        StateHasChanged(); // S'assure que le message s'affiche immédiatement
-        await Task.Delay(5000); // Le message disparaîtra après 5 secondes
+        StateHasChanged();
+        await Task.Delay(5000);
         message = null;
-        StateHasChanged(); // Retire le message de l'interface
+        StateHasChanged();
     }
 
     // Créer un menu
@@ -227,12 +244,17 @@
         isLoading = true;
         try
         {
+            // Assurez-vous que newMenu.PhotoUrl est bien défini ici si l'upload a eu lieu
+            // (il est défini dans HandlePhotoUpload)
+
             var created = await ApiService.CreateMenuAsync(newMenu);
             if (created)
             {
                 await ShowMessage("Menu créé avec succès.");
-                await LoadData(); // Recharger toutes les données après création
+                await LoadData();
                 newMenu = new() { Date = DateTime.Now }; // Réinitialiser le formulaire
+                uploadedPhotoName = null; // Réinitialiser le nom du fichier affiché
+                menuPhotoUrlFromUpload = null; // Réinitialiser l'URL de l'image uploadée
             }
             else
             {
@@ -248,18 +270,58 @@
             isLoading = false;
         }
     }
-    // Gérer le téléchargement de la photo
-    private async Task HandlePhotoUpload(InputFileChangeEventArgs e)
-{
-    uploadedPhoto = e.File;
-    uploadedPhotoName = uploadedPhoto.Name;
 
-    // Si tu veux l'uploader vers l'API maintenant, tu peux faire ça ici :
-    // var result = await ApiService.UploadPhotoAsync(uploadedPhoto);
-    // if (result != null) {
-    //     newMenu.PhotoUrl = result.Url;
-    // }
-}
+    // Gérer le téléchargement de la photo et l'envoi à l'API
+    private async Task HandlePhotoUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        uploadedPhotoName = file.Name; // Met à jour le nom affiché sur le formulaire
+        StateHasChanged(); // Pour rafraîchir l'affichage du nom du fichier
+
+        try
+        {
+            var maxFileSize = 5 * 1024 * 1024; // 5 MB
+            if (file.Size > maxFileSize)
+            {
+                await ShowMessage($"Le fichier est trop grand (max {maxFileSize / (1024 * 1024)} MB).", true);
+                uploadedPhotoName = null; // Réinitialise le nom si le fichier est trop grand
+                return;
+            }
+
+            // Crée un MultipartFormDataContent pour envoyer le fichier
+            using var stream = file.OpenReadStream(maxFileSize); // Lire le fichier avec une limite de taille
+            var content = new MultipartFormDataContent();
+            content.Add(new StreamContent(stream), "file", file.Name); // "file" doit correspondre au nom attendu par l'API
+
+            // Appelle la nouvelle méthode dans ApiService pour uploader l'image
+            var uploadResult = await ApiService.UploadMenuImage(content);
+
+            if (uploadResult.IsSuccessStatusCode)
+            {
+                // L'API renvoie l'URL de l'image sauvegardée en tant que chaîne
+                menuPhotoUrlFromUpload = await uploadResult.Content.ReadAsStringAsync();
+                newMenu.PhotoUrl = menuPhotoUrlFromUpload; // Assigne l'URL reçue de l'API au PhotoUrl du MenuDTO
+                await ShowMessage("Image téléchargée avec succès. N'oubliez pas de créer le menu pour sauvegarder l'URL en base de données.", false);
+            }
+            else
+            {
+                var errorContent = await uploadResult.Content.ReadAsStringAsync();
+                await ShowMessage($"Erreur lors du téléchargement de l'image : {uploadResult.StatusCode} - {errorContent}", true);
+                uploadedPhotoName = null; // Réinitialiser le nom du fichier en cas d'erreur
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowMessage($"Une erreur s'est produite lors du téléchargement de l'image : {ex.Message}", true);
+            uploadedPhotoName = null; // Réinitialiser le nom du fichier en cas d'erreur
+        }
+        finally
+        {
+            StateHasChanged(); // Assurer la mise à jour de l'UI
+        }
+    }
 
 
     // Supprimer un menu
@@ -275,7 +337,7 @@
                 if (result)
                 {
                     await ShowMessage("Menu supprimé avec succès.");
-                    await LoadData(); // Recharger les menus après suppression
+                    await LoadData();
                 }
                 else
                 {
@@ -294,7 +356,6 @@
     }
 
     // Annuler une réservation
-// Dans Admin.razor
     private async Task AnnulerReservation(int reservationId)
     {
         bool confirmed = await JS.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir annuler la réservation #{reservationId} ?");
@@ -303,8 +364,7 @@
             isLoading = true;
             try
             {
-                // C'est ici que la correction s'applique :
-                var result = await ApiService.DeleteReservationAsync(reservationId); // <-- Supprimez .ToString()
+                var result = await ApiService.DeleteReservationAsync(reservationId);
                 if (result)
                 {
                     await ShowMessage("Réservation annulée avec succès.");

@@ -76,6 +76,11 @@ namespace FrontendApp.Services
             return menus ?? new List<MenuDto>();
         }
 
+        public async Task<HttpResponseMessage> UploadMenuImage(MultipartFormDataContent content)
+        {
+            return await _httpClient.PostAsync("api/menu/uploadimage", content);
+        }
+
         // 📋 Obtenir les réservations
         public async Task<List<ReservationDto>> GetReservationsAsync()
         {

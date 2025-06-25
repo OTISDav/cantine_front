@@ -20,10 +20,12 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
+                @* <th>Date</th> *@
+                <th>Photo</th>
                 <th>Plat principal</th>
                 <th>Dessert</th>
                 <th>Boisson</th>
+                <th>Prix</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -31,10 +33,22 @@ else
             @foreach (var menu in menus)
             {
                 <tr>
-                    <td>@menu.Date.ToString("dd/MM/yyyy")</td>
+                    
+                    <td>               
+                            @if (!string.IsNullOrEmpty(menu.PhotoUrl))
+                            {
+                                <img src="https://localhost:7001/@menu.PhotoUrl" alt="Photo du menu" style="width: 100px; height: auto; border-radius: 5px;" />
+                            }
+                            else
+                            {
+                                <span>Pas de photo</span>
+                            }                         
+                    </td>
+                    @* <td>@menu.Date.ToString("dd/MM/yyyy")</td> *@
                     <td>@menu.PlatPrincipal</td>
                     <td>@menu.Dessert</td>
                     <td>@menu.Boisson</td>
+                    <td>@menu.Prix FCFA</td>
                     <td>
                         <button class="btn btn-primary" @onclick="() => Reserver(menu.Id)">Réserver</button>
                     </td>
