@@ -2,6 +2,8 @@
 @using FrontendApp.Services
 @using FrontendApp.Models
 @inject ApiService ApiService
+@inject IJSRuntime JS @* Don't forget to inject IJSRuntime for the alert pop-ups! *@
+@* @inject NavigationManager NavigationManager @* Inject if you need to redirect on auth issues *@
 
 <h2>Bienvenue!</h2>
 
@@ -41,7 +43,7 @@
                     <ul>
                         @foreach (var menu in menus)
                         {
-                            <li>@menu.Date - @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson </li>
+                            <li>@menu.Date.ToShortDateString() - @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson</li>
                         }
                     </ul>
                 }
@@ -49,9 +51,9 @@
             else if (openedCard == "reservations")
             {
                 <h3>Mes réservations</h3>
-                @if (reservations == null)
+                @if (reservations == null || menus == null) @* Check both for safety *@
                 {
-                    <p>Chargement des réservations...</p>
+                    <p>Chargement des réservations et des menus...</p>
                 }
                 else if (!reservations.Any())
                 {
@@ -59,14 +61,53 @@
                 }
                 else
                 {
-                    <ul>
-                        @foreach (var res in reservations)
+                    @* Iterate through menus to allow rating for each relevant menu *@
+                    @foreach (var menu in menus)
+                    {
+                        @* Only show menus that the user has actually reserved, if desired,
+                           otherwise, show all menus to be rated.
+                           For now, let's assume you want to show all menus with a reservation for today or past. *@
+                        var hasReservationForMenu = reservations.Any(r => r.MenuId == menu.Id && r.ReservationDate.Date == menu.Date.Date);
+
+                        if (hasReservationForMenu) // Show menu if there's a reservation for it
                         {
-                            <li>@res.ReservationDate.ToShortDateString() - Menu ID: @res.MenuId (x@res.Quantite)</li>
+                            <div class="menu-box">
+                                <strong>@menu.Date.ToShortDateString() :</strong> @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson
+
+                                @if (annotationsByMenu.TryGetValue(menu.Id, out var existingNote))
+                                {
+                                    <p><strong>Note déjà donnée :</strong> @existingNote.Note/5</p>
+                                    <p><strong>Commentaire :</strong> @(string.IsNullOrEmpty(existingNote.Commentaire) ? "Pas de commentaire." : existingNote.Commentaire)</p>
+                                }
+                                else
+                                {
+                                    <div class="note-form">
+                                        <h4>Noter ce menu :</h4>
+                                        @* Use EditForm and DataAnnotationsValidator for client-side validation *@
+                                        <EditForm Model="@annotationsInputs[menu.Id]" OnValidSubmit="@(() => EnvoyerNote(menu.Id))">
+                                            <DataAnnotationsValidator />
+                                            <ValidationSummary />
+
+                                            <div class="form-group">
+                                                <label>Note (1 à 5) :</label>
+                                                <InputNumber class="form-control" @bind-Value="annotationsInputs[menu.Id].Note" Min="1" Max="5" />
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Commentaire :</label>
+                                                <InputTextArea class="form-control" @bind-Value="annotationsInputs[menu.Id].Commentaire" />
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary mt-2">Envoyer</button>
+                                        </EditForm>
+                                    </div>
+                                }
+                                <hr />
+                            </div>
                         }
-                    </ul>
+                    }
                 }
-                <a href="/reservations" class="btn">Nouvelle réservation</a>
+                <a href="/reservations" class="btn mt-3">Nouvelle réservation</a> @* Place outside the loop if it's general *@
             }
             else if (openedCard == "notifications")
             {
@@ -83,27 +124,120 @@
     private List<MenuDto>? menus;
     private List<ReservationDto>? reservations;
 
+    // --- CORRECTION : Utiliser AnnotationCreateDTO pour les entrées utilisateur ---
+    private Dictionary<int, AnnotationCreateDTO> annotationsInputs = new();
+
+    // --- CORRECTION : Utiliser AnnotationDTO pour les annotations déjà existantes (reçues de l'API) ---
+    private Dictionary<int, AnnotationDTO> annotationsByMenu = new();
+
+    // Inject IJSRuntime here, as it's used for alerts
+    [Inject]
+    public IJSRuntime JS { get; set; } = default!;
+
+    // Inject NavigationManager if you want to redirect on auth errors (as suggested in ApiService)
+    // [Inject]
+    // public NavigationManager NavigationManager { get; set; } = default!;
+
+
     protected override async Task OnInitializedAsync()
     {
-        menus = await ApiService.GetMenusAsync();
-        reservations = await ApiService.GetReservationsAsync();
+        await LoadInitialData(); // Call the unified loading method
     }
 
     private void ToggleCard(string cardName)
     {
-        if (openedCard == cardName)
-            openedCard = null;
-        else
-            openedCard = cardName;
+        openedCard = openedCard == cardName ? null : cardName;
     }
 
     private void CloseOverlay()
     {
         openedCard = null;
     }
+
+    private async Task EnvoyerNote(int menuId)
+    {
+        if (annotationsByMenu.ContainsKey(menuId))
+        {
+            await JS.InvokeVoidAsync("alert", "Vous avez déjà noté ce menu.");
+            return;
+        }
+
+        // --- CORRECTION : Récupérer le AnnotationCreateDTO à envoyer ---
+        if (!annotationsInputs.TryGetValue(menuId, out var annotationToCreate))
+        {
+            // This case should ideally not happen if annotationsInputs is correctly initialized
+            await JS.InvokeVoidAsync("alert", "Erreur interne: Formulaire de note non trouvé.");
+            return;
+        }
+
+        annotationToCreate.MenuId = menuId; // Ensure MenuId is set
+
+        // --- CORRECTION : Appeler avec AnnotationCreateDTO ---
+        bool success = await ApiService.AjouterAnnotationAsync(annotationToCreate);
+        if (success)
+        {
+            await LoadInitialData(); // Reload all necessary data after success
+            await JS.InvokeVoidAsync("alert", "Note envoyée avec succès !");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Erreur lors de l'envoi de la note. Vérifiez la console du navigateur pour plus de détails (F12).");
+            // You might want to get a more specific error message from the API here
+            // e.g., by checking the HttpResponseMessage content if ApiService provides it.
+        }
+    }
+
+    // Unified method to load all initial data for clarity and reusability
+    private async Task LoadInitialData()
+    {
+        try
+        {
+            menus = await ApiService.GetMenusAsync();
+            reservations = await ApiService.GetReservationsAsync();
+            var mesNotes = await ApiService.GetAnnotationsParUtilisateurAsync();
+
+            annotationsByMenu = new Dictionary<int, AnnotationDTO>(); // Reset
+            foreach (var note in mesNotes)
+            {
+                annotationsByMenu[note.MenuId] = note;
+            }
+
+            annotationsInputs = new Dictionary<int, AnnotationCreateDTO>(); // Reset
+            if (menus != null)
+            {
+                foreach (var menu in menus)
+                {
+                    // Only initialize input for menus that haven't been rated yet
+                    if (!annotationsByMenu.ContainsKey(menu.Id))
+                    {
+                        annotationsInputs[menu.Id] = new AnnotationCreateDTO { MenuId = menu.Id }; // Initialize with MenuId
+                    }
+                }
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            // Handle HTTP errors, e.g., unauthorized access
+            // if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized || ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            // {
+            //     await JS.InvokeVoidAsync("alert", "Votre session a expiré ou vous n'êtes pas autorisé. Veuillez vous reconnecter.");
+            //     NavigationManager.NavigateTo("/login");
+            // }
+            // else
+            // {
+                await JS.InvokeVoidAsync("alert", $"Erreur lors du chargement des données: {ex.Message}");
+            // }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Une erreur inattendue est survenue: {ex.Message}");
+        }
+        StateHasChanged(); // Ensure UI updates after data loading
+    }
 }
 
 <style>
+    /* Your existing CSS styles go here */
     h2 {
         text-align: center;
         margin-bottom: 20px;
@@ -189,5 +323,37 @@
 
     li {
         margin-bottom: 10px;
+    }
+
+    .menu-box {
+        border: 1px solid #eee;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .note-form .form-group {
+        margin-bottom: 10px;
+    }
+
+    .note-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .note-form .form-control {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-sizing: border-box; /* Ensures padding doesn't add to total width */
+    }
+
+    .note-form .btn {
+        width: auto;
+        padding: 10px 15px;
+        font-size: 16px;
     }
 </style>
