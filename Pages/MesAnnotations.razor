@@ -44,7 +44,7 @@ else
 
 @code {
     private List<AnnotationDTO>? annotations;
-    private List<MenuDto>? menus; // Pour afficher les détails du menu
+    private List<MenuDto>? menus; 
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
@@ -57,18 +57,15 @@ else
         isLoading = true;
         try
         {
-            // Récupérer les menus pour pouvoir afficher leurs détails
             menus = await ApiService.GetMenusAsync();
 
-            // Récupérer les annotations de l'utilisateur actuel
             annotations = await ApiService.GetAnnotationsParUtilisateurAsync();
         }
         catch (Exception ex)
         {
-            // Gérer les erreurs de chargement
             Console.WriteLine($"Erreur lors du chargement des annotations : {ex.Message}");
             await JS.InvokeVoidAsync("alert", $"Erreur lors du chargement de vos annotations : {ex.Message}");
-            annotations = new List<AnnotationDTO>(); // S'assurer que la liste est non-null en cas d'erreur
+            annotations = new List<AnnotationDTO>(); 
         }
         finally
         {
@@ -76,13 +73,11 @@ else
         }
     }
 
-    // Méthode utilitaire pour obtenir la date du menu à partir de MenuId
     private string GetMenuDate(int menuId)
     {
         return menus?.FirstOrDefault(m => m.Id == menuId)?.Date.ToShortDateString() ?? "N/A";
     }
 
-    // Méthode utilitaire pour obtenir le plat principal du menu à partir de MenuId
     private string GetMenuPlatPrincipal(int menuId)
     {
         return menus?.FirstOrDefault(m => m.Id == menuId)?.PlatPrincipal ?? "N/A";

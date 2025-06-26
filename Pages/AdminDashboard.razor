@@ -96,13 +96,12 @@
                             {
                                 <span>Pas de photo</span>
                             }
-                            @* -------------------------------- *@
                         </td>
                         <td>@menu.Date.ToShortDateString()</td>
                         <td>@menu.PlatPrincipal</td>
                         <td>@menu.Dessert</td>
                         <td>@menu.Boisson</td>
-                        <td>@menu.Prix.ToString("C")</td> @* Corrigé: Formater le prix *@
+                        <td>@menu.Prix.ToString("C")</td>
                         <td>
                             <button class="btn btn-danger" @onclick="() => DeleteMenu(menu.Id)" disabled="@isLoading">Supprimer</button>
                         </td>
@@ -147,7 +146,7 @@
                         <td>@r.Status</td>
                         <td>
                             <button class="btn btn-warning" @onclick="() => AnnulerReservation(r.Id)" disabled="@isLoading">Annuler</button>
-                            <button class="btn btn-success" @onclick="() => MarquerCommePret(r.Id)" disabled="@isLoading">Prête</button>
+                            @* <button class="btn btn-success" @onclick="() => MarquerCommePret(r.Id)" disabled="@isLoading">Prête</button> *@
                         </td>
                     </tr>
                 }
@@ -243,17 +242,16 @@
         isLoading = true;
         try
         {
-            // Assurez-vous que newMenu.PhotoUrl est bien défini ici si l'upload a eu lieu
-            // (il est défini dans HandlePhotoUpload)
+           
 
             var created = await ApiService.CreateMenuAsync(newMenu);
             if (created)
             {
                 await ShowMessage("Menu créé avec succès.");
                 await LoadData();
-                newMenu = new() { Date = DateTime.Now }; // Réinitialiser le formulaire
-                uploadedPhotoName = null; // Réinitialiser le nom du fichier affiché
-                menuPhotoUrlFromUpload = null; // Réinitialiser l'URL de l'image uploadée
+                newMenu = new() { Date = DateTime.Now }; 
+                uploadedPhotoName = null;
+                menuPhotoUrlFromUpload = null; 
             }
             else
             {
@@ -276,49 +274,47 @@
         var file = e.File;
         if (file == null) return;
 
-        uploadedPhotoName = file.Name; // Met à jour le nom affiché sur le formulaire
-        StateHasChanged(); // Pour rafraîchir l'affichage du nom du fichier
+        uploadedPhotoName = file.Name; 
+        StateHasChanged(); 
 
         try
         {
-            var maxFileSize = 5 * 1024 * 1024; // 5 MB
+            var maxFileSize = 5 * 1024 * 1024; 
             if (file.Size > maxFileSize)
             {
                 await ShowMessage($"Le fichier est trop grand (max {maxFileSize / (1024 * 1024)} MB).", true);
-                uploadedPhotoName = null; // Réinitialise le nom si le fichier est trop grand
+                uploadedPhotoName = null; 
                 return;
             }
 
-            // Crée un MultipartFormDataContent pour envoyer le fichier
-            using var stream = file.OpenReadStream(maxFileSize); // Lire le fichier avec une limite de taille
+            
+            using var stream = file.OpenReadStream(maxFileSize); 
             var content = new MultipartFormDataContent();
-            content.Add(new StreamContent(stream), "file", file.Name); // "file" doit correspondre au nom attendu par l'API
+            content.Add(new StreamContent(stream), "file", file.Name);
 
-            // Appelle la nouvelle méthode dans ApiService pour uploader l'image
             var uploadResult = await ApiService.UploadMenuImage(content);
 
             if (uploadResult.IsSuccessStatusCode)
             {
-                // L'API renvoie l'URL de l'image sauvegardée en tant que chaîne
                 menuPhotoUrlFromUpload = await uploadResult.Content.ReadAsStringAsync();
-                newMenu.PhotoUrl = menuPhotoUrlFromUpload; // Assigne l'URL reçue de l'API au PhotoUrl du MenuDTO
+                newMenu.PhotoUrl = menuPhotoUrlFromUpload; 
                 await ShowMessage("Image téléchargée avec succès. N'oubliez pas de créer le menu pour sauvegarder l'URL en base de données.", false);
             }
             else
             {
                 var errorContent = await uploadResult.Content.ReadAsStringAsync();
                 await ShowMessage($"Erreur lors du téléchargement de l'image : {uploadResult.StatusCode} - {errorContent}", true);
-                uploadedPhotoName = null; // Réinitialiser le nom du fichier en cas d'erreur
+                uploadedPhotoName = null; 
             }
         }
         catch (Exception ex)
         {
             await ShowMessage($"Une erreur s'est produite lors du téléchargement de l'image : {ex.Message}", true);
-            uploadedPhotoName = null; // Réinitialiser le nom du fichier en cas d'erreur
+            uploadedPhotoName = null; 
         }
         finally
         {
-            StateHasChanged(); // Assurer la mise à jour de l'UI
+            StateHasChanged(); 
         }
     }
 
@@ -386,20 +382,11 @@
     }
 
     // Marquer une réservation comme prête
-    private async Task MarquerCommePret(int reservationId)
+    @* private async Task MarquerCommePret(int reservationId)
     {
-        // Cette fonction est une simulation. En réalité, on voudra appeler une API.
-        // Exemple d'appel API hypothétique:
-        // var result = await ApiService.UpdateReservationStatusAsync(reservationId, "Pret");
-        // if (result) {
-        //     await ShowMessage($"La réservation #{reservationId} a été marquée comme prête.");
-        //     await LoadData();
-        // } else {
-        //     await ShowMessage("Erreur lors de la mise à jour du statut de la réservation.", true);
-        // }
+      
 
         await ShowMessage($"La réservation #{reservationId} est marquée comme prête (simulation).");
-        // Recharger les données si le statut est réellement mis à jour via une API
-        // await LoadData();
-    }
+       
+    } *@
 }

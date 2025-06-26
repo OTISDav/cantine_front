@@ -1,12 +1,7 @@
-// FrontendApp/Models/AnnotationDTOs.cs
-
 using System;
-using System.ComponentModel.DataAnnotations; // Nécessaire pour [Required], [Range], [MaxLength]
-
+using System.ComponentModel.DataAnnotations;
 namespace FrontendApp.Models
-{
-    // DTO pour l'envoi de nouvelles annotations à l'API
-    public class AnnotationCreateDTO
+{    public class AnnotationCreateDTO
     {
         [Required(ErrorMessage = "Le MenuId est requis.")]
         public int MenuId { get; set; }
@@ -16,10 +11,9 @@ namespace FrontendApp.Models
         public int Note { get; set; }
 
         [MaxLength(500, ErrorMessage = "Le commentaire ne peut pas dépasser 500 caractères.")]
-        public string? Commentaire { get; set; } // Peut être null
+        public string? Commentaire { get; set; } 
     }
 
-    // DTO pour l'envoi de mises à jour d'annotations à l'API (si vous implémentez l'édition)
     public class AnnotationUpdateDTO
     {
         [Required(ErrorMessage = "La note est requise.")]
@@ -27,10 +21,9 @@ namespace FrontendApp.Models
         public int Note { get; set; }
 
         [MaxLength(500, ErrorMessage = "Le commentaire ne peut pas dépasser 500 caractères.")]
-        public string? Commentaire { get; set; } // Peut être null
+        public string? Commentaire { get; set; } 
     }
 
-    // DTO pour recevoir les annotations de l'API et les afficher
     public class AnnotationDTO
     {
         public int Id { get; set; }

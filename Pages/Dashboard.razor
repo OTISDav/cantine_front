@@ -144,16 +144,14 @@
      bool success = await ApiService.AjouterAnnotationAsync(note); 
      if (success) 
      { 
-         // Ici tu remplaces annotationsByMenu[menuId] avec un objet AnnotationDto construit à partir de note 
          annotationsByMenu[menuId] = new AnnotationDTO 
          { 
              MenuId = note.MenuId, 
              Note = note.Note, 
              Commentaire = note.Commentaire, 
-             // UserId = ??? (à ajouter si tu as cette info) 
          }; 
 
-         annotationsInputs[menuId] = new AnnotationCreateDTO(); // reset le formulaire 
+         annotationsInputs[menuId] = new AnnotationCreateDTO();
          await JS.InvokeVoidAsync("alert", "Note envoyée avec succès !"); 
          StateHasChanged(); 
      } 

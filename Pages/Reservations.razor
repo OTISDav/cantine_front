@@ -54,7 +54,7 @@ else
 
 @code {
     private List<ReservationDto> reservations = new();
-    private ReservationCreateDTO newReservation = new() // Correction : c'est un ReservationCreateDTO
+    private ReservationCreateDTO newReservation = new() 
     {
         UserId = "default-user-id"
     };
@@ -93,18 +93,15 @@ else
             return;
         }
 
-        // Demander confirmation à l'utilisateur
         bool confirmed = await JS.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir annuler la réservation du {reservation.ReservationDate.ToShortDateString()} (ID: {reservation.Id}) ?");
 
         if (confirmed)
         {
-            // Appeler l'API pour annuler la réservation
             bool success = await ApiService.DeleteReservationAsync(reservation.Id);
 
             if (success)
             {
                 message = "✅ Réservation annulée avec succès.";
-                // Supprime la réservation de la liste locale pour mettre à jour l'affichage
                 reservations.Remove(reservation); 
             }
             else

@@ -113,7 +113,6 @@ namespace FrontendApp.Services
         {
             try
             {
-                // Assurez-vous que l'URL de votre API est correcte, par ex. "api/Reservation/{reservationId}"
                 var response = await _httpClient.DeleteAsync($"api/Reservation/{reservationId}");
 
                 if (response.IsSuccessStatusCode)
@@ -153,13 +152,9 @@ namespace FrontendApp.Services
 
         public async Task<bool> AjouterAnnotationAsync(AnnotationCreateDTO annotation)
         {
-            await SetAuthHeaderAsync(); // Assure que le token est envoyé
+            await SetAuthHeaderAsync(); 
             var response = await _httpClient.PostAsJsonAsync("api/Annotation", annotation);
-            // Si vous voulez un débogage plus précis en cas d'échec :
-            // if (!response.IsSuccessStatusCode) {
-            //     var errorContent = await response.Content.ReadAsStringAsync();
-            //     Console.WriteLine($"Erreur d'ajout d'annotation : {response.StatusCode} - {errorContent}");
-            // }
+    
             return response.IsSuccessStatusCode;
         }
 
@@ -177,8 +172,7 @@ namespace FrontendApp.Services
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
                      response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
-                // Gérer les erreurs d'autorisation/accès refusé
-                // _navigationManager.NavigateTo("/login"); // Exemple de redirection
+                
                 return new List<AnnotationDTO>();
             }
             return new List<AnnotationDTO>();
@@ -190,8 +184,7 @@ namespace FrontendApp.Services
             try
             {
                 await SetAuthHeaderAsync();
-                // C'EST CETTE LIGNE QUI DOIT ÊTRE CORRIGÉE :
-                var response = await _httpClient.GetAsync("api/Annotation/mes-annotations"); // <-- Modifiez "User" en "mes-annotations"
+                var response = await _httpClient.GetAsync("api/Annotation/mes-annotations"); 
 
                 if (response.IsSuccessStatusCode)
                 {

@@ -74,27 +74,22 @@ else
 
     private async Task Reserver(int menuId)
     {
-        // 1. Récupérer l'ID de l'utilisateur depuis le stockage local
         var userId = await JS.InvokeAsync<string>("localStorage.getItem", "user_id");
 
-        // 2. Créer une instance de ReservationCreateDTO
-        //    Ce DTO doit contenir uniquement les données requises par l'API pour créer une nouvelle réservation.
+    
         var reservationToCreate = new ReservationCreateDTO
         {
             MenuId = menuId,
             ReservationDate = DateTime.Now,
-            UserId = userId ?? "default-user-id" // Utilise l'ID utilisateur récupéré, ou une valeur par défaut si null
-            // N'incluez PAS le statut ici, car il est généralement défini par le backend lors de la création
+            UserId = userId ?? "default-user-id" 
         };
 
-        // 3. Appeler le service API avec le bon type de DTO
-        var created = await ApiService.CreateReservationAsync(reservationToCreate); // Passe ReservationCreateDTO
+        var created = await ApiService.CreateReservationAsync(reservationToCreate); 
 
         if (created != null)
         {
             message = "✅ Réservation effectuée avec succès.";
-            // Si nécessaire, vous pouvez rafraîchir ici la liste de vos menus ou réservations.
-            // Par exemple : menus = await ApiService.GetMenusAsync();
+            
         }
         else
         {
