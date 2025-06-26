@@ -195,13 +195,12 @@
     private List<MenuDto>? menus;
     private MenuDto newMenu = new() { Date = DateTime.Now };
     private List<ReservationDto>? reservations;
-    private List<AnnotationDto>? annotations;
+    private List<AnnotationDTO>? annotations;
     private string? message;
     private bool isErrorMessage;
     private bool isLoading = true;
-    // IBrowserFile? uploadedPhoto; // Plus besoin de le stocker ici, on l'envoie directement
-    private string? uploadedPhotoName; // Pour afficher le nom du fichier sélectionné
-    private string? menuPhotoUrlFromUpload; // Pour stocker l'URL renvoyée par l'API après upload
+    private string? uploadedPhotoName;
+    private string? menuPhotoUrlFromUpload;
 
 
     protected override async Task OnInitializedAsync()
@@ -216,7 +215,7 @@
         {
             menus = await ApiService.GetMenusAsync();
             reservations = await ApiService.GetReservationsAsync();
-            annotations = await ApiService.GetAnnotationsAsync();
+            annotations = await ApiService.GetAllAnnotationsAsync();
         }
         catch (Exception ex)
         {

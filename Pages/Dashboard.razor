@@ -1,359 +1,166 @@
-@page "/dashboard"
-@using FrontendApp.Services
-@using FrontendApp.Models
-@inject ApiService ApiService
-@inject IJSRuntime JS @* Don't forget to inject IJSRuntime for the alert pop-ups! *@
-@* @inject NavigationManager NavigationManager @* Inject if you need to redirect on auth issues *@
+@page "/dashboard" 
+ @using FrontendApp.Services 
+ @using FrontendApp.Models 
+ @inject NavigationManager Navigation
+ @inject ApiService ApiService 
+ @inject IJSRuntime JS 
 
-<h2>Bienvenue!</h2>
+ <h2>Bienvenue!</h2> 
 
-<div class="dashboard">
-    <div class="card" @onclick="@(() => ToggleCard("menus"))">
-        <h3>Menus du jour</h3>
-    </div>
+ <div class="dashboard"> 
+     <div class="card" @onclick="@(() => ToggleCard("menus"))"> 
+         <h3>Menus du jour</h3> 
+     </div> 
 
-    <div class="card" @onclick="@(() => ToggleCard("reservations"))">
-        <h3>Mes réservations</h3>
-    </div>
+     <div class="card" @onclick="@(() => ToggleCard("reservations"))"> 
+         <h3>Mes réservations</h3> 
+     </div> 
 
-    <div class="card" @onclick="@(() => ToggleCard("notifications"))">
-        <h3>Notifications</h3>
-    </div>
-</div>
+     <div class="card" @onclick="@(() => ToggleCard("notifications"))"> 
+         <h3>Notifications</h3> 
+     </div> 
+    @* <div class="card" @onclick="@(() => Navigation.NavigateTo("/mesannotations"))" style="cursor: pointer;">
+        <h3>Mes Annotations</h3>
+    </div> *@
+     
+ </div> 
 
-@if (!string.IsNullOrEmpty(openedCard))
-{
-    <div class="overlay">
-        <div class="overlay-content">
-            <button class="close-btn" @onclick="CloseOverlay">X</button>
+ @if (!string.IsNullOrEmpty(openedCard)) 
+ { 
+     <div class="overlay"> 
+         <div class="overlay-content"> 
+             <button class="close-btn" @onclick="CloseOverlay">X</button> 
 
-            @if (openedCard == "menus")
-            {
-                <h3>Menus du jour</h3>
-                @if (menus == null)
-                {
-                    <p>Chargement des menus...</p>
-                }
-                else if (!menus.Any())
-                {
-                    <p>Aucun menu disponible.</p>
-                }
-                else
-                {
-                    <ul>
-                        @foreach (var menu in menus)
-                        {
-                            <li>@menu.Date.ToShortDateString() - @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson</li>
-                        }
-                    </ul>
-                }
-            }
-            else if (openedCard == "reservations")
-            {
-                <h3>Mes réservations</h3>
-                @if (reservations == null || menus == null) @* Check both for safety *@
-                {
-                    <p>Chargement des réservations et des menus...</p>
-                }
-                else if (!reservations.Any())
-                {
-                    <p>Aucune réservation.</p>
-                }
-                else
-                {
-                    @* Iterate through menus to allow rating for each relevant menu *@
-                    @foreach (var menu in menus)
-                    {
-                        @* Only show menus that the user has actually reserved, if desired,
-                           otherwise, show all menus to be rated.
-                           For now, let's assume you want to show all menus with a reservation for today or past. *@
-                        var hasReservationForMenu = reservations.Any(r => r.MenuId == menu.Id && r.ReservationDate.Date == menu.Date.Date);
+             @if (openedCard == "menus") 
+             { 
+                 <h3>Menus du jour</h3> 
+                 @if (menus == null) 
+                 { 
+                     <p>Chargement des menus...</p> 
+                 } 
+                 else if (!menus.Any()) 
+                 { 
+                     <p>Aucun menu disponible.</p> 
+                 } 
+                 else 
+                 { 
+                     <ul> 
+                         @foreach (var menu in menus) 
+                         { 
+                             <li>@menu.Date.ToString("dd/MM/yyyy") - @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson</li> 
+                         } 
+                     </ul> 
+                 } 
+             } 
+             else if (openedCard == "reservations") 
+             { 
+                 <h3>Mes réservations</h3> 
+                 @if (reservations == null) 
+                 { 
+                     <p>Chargement des réservations...</p> 
+                 } 
+                 else if (!reservations.Any()) 
+                 { 
+                     <p>Aucune réservation.</p> 
+                 } 
+                 else 
+                 { 
+                     @foreach (var menu in menus) 
+                     { 
+                         <div class="menu-box"> 
+                             <strong>@menu.Date.ToShortDateString() :</strong> @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson 
 
-                        if (hasReservationForMenu) // Show menu if there's a reservation for it
-                        {
-                            <div class="menu-box">
-                                <strong>@menu.Date.ToShortDateString() :</strong> @menu.PlatPrincipal - @menu.Dessert - @menu.Boisson
+                             @if (annotationsByMenu.TryGetValue(menu.Id, out var existingNote)) 
+                             { 
+                                 <p><strong>Note déjà donnée :</strong> @existingNote.Note/5</p> 
+                                 <p><strong>Commentaire :</strong> @existingNote.Commentaire</p> 
+                             } 
+                             else 
+                             { 
+                                 <div class="note-form"> 
+                                     <label>Note (1 à 5) :</label> 
+                                     <InputNumber @bind-Value="annotationsInputs[menu.Id].Note" Min="1" Max="5" /> 
 
-                                @if (annotationsByMenu.TryGetValue(menu.Id, out var existingNote))
-                                {
-                                    <p><strong>Note déjà donnée :</strong> @existingNote.Note/5</p>
-                                    <p><strong>Commentaire :</strong> @(string.IsNullOrEmpty(existingNote.Commentaire) ? "Pas de commentaire." : existingNote.Commentaire)</p>
-                                }
-                                else
-                                {
-                                    <div class="note-form">
-                                        <h4>Noter ce menu :</h4>
-                                        @* Use EditForm and DataAnnotationsValidator for client-side validation *@
-                                        <EditForm Model="@annotationsInputs[menu.Id]" OnValidSubmit="@(() => EnvoyerNote(menu.Id))">
-                                            <DataAnnotationsValidator />
-                                            <ValidationSummary />
+                                     <label>Commentaire :</label> 
+                                     <InputText @bind-Value="annotationsInputs[menu.Id].Commentaire" /> 
 
-                                            <div class="form-group">
-                                                <label>Note (1 à 5) :</label>
-                                                <InputNumber class="form-control" @bind-Value="annotationsInputs[menu.Id].Note" Min="1" Max="5" />
-                                            </div>
+                                     <button class="btn" @onclick="@(() => EnvoyerNote(menu.Id))">Envoyer</button> 
+                                 </div> 
+                             } 
+                         </div> 
+                     } 
+                 } 
+                 <a href="/reservations" class="btn">Nouvelle réservation</a> 
+             } 
+             else if (openedCard == "notifications") 
+             { 
+                 <h3>Notifications</h3> 
+                 <p>Aucune notification pour le moment.</p> 
+             } 
+         </div> 
+     </div> 
+ } 
 
-                                            <div class="form-group">
-                                                <label>Commentaire :</label>
-                                                <InputTextArea class="form-control" @bind-Value="annotationsInputs[menu.Id].Commentaire" />
-                                            </div>
+ @code { 
+     private string? openedCard; 
+     private List<MenuDto>? menus; 
+     private List<ReservationDto>? reservations; 
+     private Dictionary<int, AnnotationCreateDTO> annotationsInputs = new(); 
+     private Dictionary<int, AnnotationDTO> annotationsByMenu = new(); 
 
-                                            <button type="submit" class="btn btn-primary mt-2">Envoyer</button>
-                                        </EditForm>
-                                    </div>
-                                }
-                                <hr />
-                            </div>
-                        }
-                    }
-                }
-                <a href="/reservations" class="btn mt-3">Nouvelle réservation</a> @* Place outside the loop if it's general *@
-            }
-            else if (openedCard == "notifications")
-            {
-                <h3>Notifications</h3>
-                <p>Aucune notification pour le moment.</p>
-                @* Tu pourras remplacer ceci par une liste dynamique plus tard *@
-            }
-        </div>
-    </div>
-}
+     protected override async Task OnInitializedAsync() 
+     { 
+         menus = await ApiService.GetMenusAsync(); 
+         reservations = await ApiService.GetReservationsAsync(); 
+         var mesNotes = await ApiService.GetAnnotationsParUtilisateurAsync(); 
 
-@code {
-    private string? openedCard;
-    private List<MenuDto>? menus;
-    private List<ReservationDto>? reservations;
+         foreach (var note in mesNotes) 
+         { 
+             annotationsByMenu[note.MenuId] = note; 
+         } 
 
-    // --- CORRECTION : Utiliser AnnotationCreateDTO pour les entrées utilisateur ---
-    private Dictionary<int, AnnotationCreateDTO> annotationsInputs = new();
+         foreach (var menu in menus) 
+         { 
+             if (!annotationsInputs.ContainsKey(menu.Id)) 
+                 annotationsInputs[menu.Id] = new AnnotationCreateDTO(); 
+         } 
+     } 
 
-    // --- CORRECTION : Utiliser AnnotationDTO pour les annotations déjà existantes (reçues de l'API) ---
-    private Dictionary<int, AnnotationDTO> annotationsByMenu = new();
+     private void ToggleCard(string cardName) 
+     { 
+         openedCard = openedCard == cardName ? null : cardName; 
+     } 
 
-    // Inject IJSRuntime here, as it's used for alerts
-    [Inject]
-    public IJSRuntime JS { get; set; } = default!;
+     private void CloseOverlay() 
+     { 
+         openedCard = null; 
+     } 
 
-    // Inject NavigationManager if you want to redirect on auth errors (as suggested in ApiService)
-    // [Inject]
-    // public NavigationManager NavigationManager { get; set; } = default!;
+     private async Task EnvoyerNote(int menuId) 
+ { 
+     var note = annotationsInputs[menuId]; 
+     note.MenuId = menuId; 
 
+     bool success = await ApiService.AjouterAnnotationAsync(note); 
+     if (success) 
+     { 
+         // Ici tu remplaces annotationsByMenu[menuId] avec un objet AnnotationDto construit à partir de note 
+         annotationsByMenu[menuId] = new AnnotationDTO 
+         { 
+             MenuId = note.MenuId, 
+             Note = note.Note, 
+             Commentaire = note.Commentaire, 
+             // UserId = ??? (à ajouter si tu as cette info) 
+         }; 
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadInitialData(); // Call the unified loading method
-    }
+         annotationsInputs[menuId] = new AnnotationCreateDTO(); // reset le formulaire 
+         await JS.InvokeVoidAsync("alert", "Note envoyée avec succès !"); 
+         StateHasChanged(); 
+     } 
+     else 
+     { 
+         await JS.InvokeVoidAsync("alert", "Erreur lors de l'envoi de la note."); 
+     } 
+ } 
 
-    private void ToggleCard(string cardName)
-    {
-        openedCard = openedCard == cardName ? null : cardName;
-    }
-
-    private void CloseOverlay()
-    {
-        openedCard = null;
-    }
-
-    private async Task EnvoyerNote(int menuId)
-    {
-        if (annotationsByMenu.ContainsKey(menuId))
-        {
-            await JS.InvokeVoidAsync("alert", "Vous avez déjà noté ce menu.");
-            return;
-        }
-
-        // --- CORRECTION : Récupérer le AnnotationCreateDTO à envoyer ---
-        if (!annotationsInputs.TryGetValue(menuId, out var annotationToCreate))
-        {
-            // This case should ideally not happen if annotationsInputs is correctly initialized
-            await JS.InvokeVoidAsync("alert", "Erreur interne: Formulaire de note non trouvé.");
-            return;
-        }
-
-        annotationToCreate.MenuId = menuId; // Ensure MenuId is set
-
-        // --- CORRECTION : Appeler avec AnnotationCreateDTO ---
-        bool success = await ApiService.AjouterAnnotationAsync(annotationToCreate);
-        if (success)
-        {
-            await LoadInitialData(); // Reload all necessary data after success
-            await JS.InvokeVoidAsync("alert", "Note envoyée avec succès !");
-        }
-        else
-        {
-            await JS.InvokeVoidAsync("alert", "Erreur lors de l'envoi de la note. Vérifiez la console du navigateur pour plus de détails (F12).");
-            // You might want to get a more specific error message from the API here
-            // e.g., by checking the HttpResponseMessage content if ApiService provides it.
-        }
-    }
-
-    // Unified method to load all initial data for clarity and reusability
-    private async Task LoadInitialData()
-    {
-        try
-        {
-            menus = await ApiService.GetMenusAsync();
-            reservations = await ApiService.GetReservationsAsync();
-            var mesNotes = await ApiService.GetAnnotationsParUtilisateurAsync();
-
-            annotationsByMenu = new Dictionary<int, AnnotationDTO>(); // Reset
-            foreach (var note in mesNotes)
-            {
-                annotationsByMenu[note.MenuId] = note;
-            }
-
-            annotationsInputs = new Dictionary<int, AnnotationCreateDTO>(); // Reset
-            if (menus != null)
-            {
-                foreach (var menu in menus)
-                {
-                    // Only initialize input for menus that haven't been rated yet
-                    if (!annotationsByMenu.ContainsKey(menu.Id))
-                    {
-                        annotationsInputs[menu.Id] = new AnnotationCreateDTO { MenuId = menu.Id }; // Initialize with MenuId
-                    }
-                }
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            // Handle HTTP errors, e.g., unauthorized access
-            // if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized || ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
-            // {
-            //     await JS.InvokeVoidAsync("alert", "Votre session a expiré ou vous n'êtes pas autorisé. Veuillez vous reconnecter.");
-            //     NavigationManager.NavigateTo("/login");
-            // }
-            // else
-            // {
-                await JS.InvokeVoidAsync("alert", $"Erreur lors du chargement des données: {ex.Message}");
-            // }
-        }
-        catch (Exception ex)
-        {
-            await JS.InvokeVoidAsync("alert", $"Une erreur inattendue est survenue: {ex.Message}");
-        }
-        StateHasChanged(); // Ensure UI updates after data loading
-    }
-}
-
-<style>
-    /* Your existing CSS styles go here */
-    h2 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .dashboard {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-        padding: 0 20px;
-    }
-
-    .card {
-        background: #ffffff;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 30px 20px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        text-align: center;
-    }
-
-    .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-
-    .overlay-content {
-        background: #fff;
-        padding: 30px;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 450px;
-        position: relative;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #ff4d4d;
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        cursor: pointer;
-    }
-
-    .btn {
-        margin-top: 10px;
-        display: inline-block;
-        padding: 8px 12px;
-        background: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        text-decoration: none;
-    }
-
-    .btn:hover {
-        background: #0056b3;
-    }
-
-    ul {
-        padding-left: 20px;
-    }
-
-    li {
-        margin-bottom: 10px;
-    }
-
-    .menu-box {
-        border: 1px solid #eee;
-        padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-    }
-
-    .note-form .form-group {
-        margin-bottom: 10px;
-    }
-
-    .note-form label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-
-    .note-form .form-control {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        box-sizing: border-box; /* Ensures padding doesn't add to total width */
-    }
-
-    .note-form .btn {
-        width: auto;
-        padding: 10px 15px;
-        font-size: 16px;
-    }
-</style>
+ }

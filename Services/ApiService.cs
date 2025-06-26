@@ -109,11 +109,6 @@ namespace FrontendApp.Services
 
 
 
-        // ❌ Supprimer une réservation
-        // FrontendApp/Services/ApiService.cs
-
-        // ... (vos autres méthodes ApiService) ...
-
         public async Task<bool> DeleteReservationAsync(int reservationId)
         {
             try
@@ -156,38 +151,67 @@ namespace FrontendApp.Services
             return response.IsSuccessStatusCode;
         }
 
-        // 📝 Obtenir les annotations
-        public async Task<List<AnnotationDto>> GetAnnotationsAsync()
+        public async Task<bool> AjouterAnnotationAsync(AnnotationCreateDTO annotation)
         {
-            await SetAuthHeaderAsync(); // 🔐 important
-            var response = await _httpClient.GetAsync("api/Annotation");
-            response.EnsureSuccessStatusCode();
-
-            var annotations = await response.Content.ReadFromJsonAsync<List<AnnotationDto>>();
-            return annotations ?? new List<AnnotationDto>();
-        }
-
-        // 📝 Ajouter une annotation
-        public async Task<bool> AjouterAnnotationAsync(AnnotationDto annotation)
-        {
-            await SetAuthHeaderAsync();
+            await SetAuthHeaderAsync(); // Assure que le token est envoyé
             var response = await _httpClient.PostAsJsonAsync("api/Annotation", annotation);
+            // Si vous voulez un débogage plus précis en cas d'échec :
+            // if (!response.IsSuccessStatusCode) {
+            //     var errorContent = await response.Content.ReadAsStringAsync();
+            //     Console.WriteLine($"Erreur d'ajout d'annotation : {response.StatusCode} - {errorContent}");
+            // }
             return response.IsSuccessStatusCode;
         }
 
-        // 🔐 Récupérer les annotations de l'utilisateur connecté
-        public async Task<List<AnnotationDto>> GetAnnotationsParUtilisateurAsync()
+        // Récupère toutes les annotations (probablement pour un rôle Admin)
+        public async Task<List<AnnotationDTO>> GetAllAnnotationsAsync()
         {
-            await SetAuthHeaderAsync(); // Assure l'envoi du token JWT
-            var response = await _httpClient.GetAsync("api/Annotation/User");
+            await SetAuthHeaderAsync();
+            var response = await _httpClient.GetAsync("api/Annotation/all");
 
             if (response.IsSuccessStatusCode)
             {
-                var annotations = await response.Content.ReadFromJsonAsync<List<AnnotationDto>>();
-                return annotations ?? new List<AnnotationDto>();
+                var annotations = await response.Content.ReadFromJsonAsync<List<AnnotationDTO>>();
+                return annotations ?? new List<AnnotationDTO>();
             }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                     response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                // Gérer les erreurs d'autorisation/accès refusé
+                // _navigationManager.NavigateTo("/login"); // Exemple de redirection
+                return new List<AnnotationDTO>();
+            }
+            return new List<AnnotationDTO>();
+        }
 
-            return new List<AnnotationDto>();
+        // Récupère les annotations de l'utilisateur actuel
+        public async Task<List<AnnotationDTO>> GetAnnotationsParUtilisateurAsync()
+        {
+            try
+            {
+                await SetAuthHeaderAsync();
+                // C'EST CETTE LIGNE QUI DOIT ÊTRE CORRIGÉE :
+                var response = await _httpClient.GetAsync("api/Annotation/mes-annotations"); // <-- Modifiez "User" en "mes-annotations"
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var annotations = await response.Content.ReadFromJsonAsync<List<AnnotationDTO>>();
+                    return annotations ?? new List<AnnotationDTO>();
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    LastError = $"Erreur de récupération des annotations de l'utilisateur : {response.StatusCode} - {errorContent}";
+                    Console.WriteLine(LastError);
+                    return new List<AnnotationDTO>();
+                }
+            }
+            catch (Exception ex)
+            {
+                LastError = $"Exception lors de la récupération des annotations de l'utilisateur : {ex.Message}";
+                Console.WriteLine(LastError);
+                return new List<AnnotationDTO>();
+            }
         }
 
 
