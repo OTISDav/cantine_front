@@ -20,7 +20,6 @@ else
     <table class="table">
         <thead>
             <tr>
-                @* <th>Date</th> *@
                 <th>Photo</th>
                 <th>Plat principal</th>
                 <th>Dessert</th>
@@ -33,24 +32,47 @@ else
             @foreach (var menu in menus)
             {
                 <tr>
-                    
-                    <td>               
-                            @if (!string.IsNullOrEmpty(menu.PhotoUrl))
-                            {
-                                <img src="https://localhost:7001/@menu.PhotoUrl" alt="Photo du menu" style="width: 100px; height: auto; border-radius: 5px;" />
-                            }
-                            else
-                            {
-                                <span>Pas de photo</span>
-                            }                         
+                    <td>
+                        @if (!string.IsNullOrEmpty(menu.PhotoUrl))
+                        {
+                            <img src="https://localhost:7001/@menu.PhotoUrl" style="width: 100px; height: auto; border-radius: 5px;" />
+                        }
+                        else
+                        {
+                            <span>Pas de photo</span>
+                        }
                     </td>
-                    @* <td>@menu.Date.ToString("dd/MM/yyyy")</td> *@
                     <td>@menu.PlatPrincipal</td>
                     <td>@menu.Dessert</td>
                     <td>@menu.Boisson</td>
                     <td>@menu.Prix FCFA</td>
                     <td>
                         <button class="btn btn-primary" @onclick="() => Reserver(menu.Id)">Réserver</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="6">
+                        @if (annotationsExistantes.ContainsKey(menu.Id))
+                        {
+                            var a = annotationsExistantes[menu.Id];
+                            <div style="margin-left: 20px;">
+                                <strong>Note donnée :</strong> @a.Note/5<br />
+                                <strong>Commentaire :</strong> @a.Commentaire
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="margin-left: 20px;">
+                                <label>Note (1 à 5) :</label>
+                                <InputNumber @bind-Value="nouvellesAnnotations[menu.Id].Note" Min="1" Max="5" class="form-control" />
+
+                                <label>Commentaire :</label>
+                                <InputText @bind-Value="nouvellesAnnotations[menu.Id].Commentaire" class="form-control" />
+
+                                <button class="btn btn-success mt-1" @onclick="() => EnvoyerAnnotation(menu.Id)">Envoyer</button>
+                            </div>
+                        }
                     </td>
                 </tr>
             }
@@ -65,40 +87,81 @@ else
 
 @code {
     private List<MenuDto>? menus;
+    private List<AnnotationDto>? toutesAnnotations;
+    private Dictionary<int, AnnotationDto> annotationsExistantes = new();
+    private Dictionary<int, AnnotationDto> nouvellesAnnotations = new();
+    private string? userId;
     private string? message;
 
     protected override async Task OnInitializedAsync()
     {
         menus = await ApiService.GetMenusAsync();
+        toutesAnnotations = await ApiService.GetAnnotationsAsync();
+        userId = await JS.InvokeAsync<string>("localStorage.getItem", "user_id");
+
+        if (userId != null)
+        {
+            foreach (var ann in toutesAnnotations)
+            {
+                if (ann.UserId == userId && !annotationsExistantes.ContainsKey(ann.MenuId))
+                {
+                    annotationsExistantes[ann.MenuId] = ann;
+                }
+            }
+        }
+
+        if (menus != null)
+        {
+            foreach (var menu in menus)
+            {
+                if (!nouvellesAnnotations.ContainsKey(menu.Id))
+                {
+                    nouvellesAnnotations[menu.Id] = new AnnotationDto();
+                }
+            }
+        }
     }
 
     private async Task Reserver(int menuId)
     {
-        // 1. Récupérer l'ID de l'utilisateur depuis le stockage local
-        var userId = await JS.InvokeAsync<string>("localStorage.getItem", "user_id");
-
-        // 2. Créer une instance de ReservationCreateDTO
-        //    Ce DTO doit contenir uniquement les données requises par l'API pour créer une nouvelle réservation.
         var reservationToCreate = new ReservationCreateDTO
         {
             MenuId = menuId,
             ReservationDate = DateTime.Now,
-            UserId = userId ?? "default-user-id" // Utilise l'ID utilisateur récupéré, ou une valeur par défaut si null
-            // N'incluez PAS le statut ici, car il est généralement défini par le backend lors de la création
+            UserId = userId ?? "default-user-id"
         };
 
-        // 3. Appeler le service API avec le bon type de DTO
-        var created = await ApiService.CreateReservationAsync(reservationToCreate); // Passe ReservationCreateDTO
+        var created = await ApiService.CreateReservationAsync(reservationToCreate);
 
         if (created != null)
         {
-            message = "✅ Réservation effectuée avec succès.";
-            // Si nécessaire, vous pouvez rafraîchir ici la liste de vos menus ou réservations.
-            // Par exemple : menus = await ApiService.GetMenusAsync();
+            message = "Réservation effectuée avec succès.";
         }
         else
         {
-            message = "❌ Échec de la réservation.";
+            message = "Échec de la réservation.";
+        }
+    }
+
+    private async Task EnvoyerAnnotation(int menuId)
+    {
+        if (nouvellesAnnotations.TryGetValue(menuId, out var annotation) && !string.IsNullOrWhiteSpace(userId))
+        {
+            annotation.MenuId = menuId;
+            annotation.UserId = userId;
+
+            var success = await ApiService.AjouterAnnotationAsync(annotation);
+
+            if (success)
+            {
+                annotationsExistantes[menuId] = annotation;
+                nouvellesAnnotations[menuId] = new AnnotationDto();
+                message = "Note envoyée avec succès.";
+            }
+            else
+            {
+                message = "Erreur lors de l'envoi de la note.";
+            }
         }
     }
 }
